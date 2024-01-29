@@ -50,11 +50,12 @@ func (ap *audioPanel) play() {
 
 func LoadAndPlay(path string) {
 	openFileForPlaying(path, &streamer, &format)
+	speaker.Clear()
 	ap := newAudioPanel(format.SampleRate, streamer)
 
 	// ******************************
 	// set that start position of the stream. should be done before play() otherwise it speeds up
-	speaker.Lock()
+	// speaker.Lock()
 	newPos := ap.streamer.Position()
 	newPos += ap.sampleRate.N(time.Minute * 2)
 	if newPos < 0 {
@@ -66,7 +67,7 @@ func LoadAndPlay(path string) {
 	if err := ap.streamer.Seek(newPos); err != nil {
 		log.Fatal(err)
 	}
-	speaker.Unlock()
+	// speaker.Unlock()
 	// ******************************
 	ap.play()
 	playing = true
