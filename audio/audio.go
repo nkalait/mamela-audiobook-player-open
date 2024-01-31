@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gopxl/beep"
@@ -34,43 +35,28 @@ func newAudioPanel(sampleRate beep.SampleRate, streamer beep.StreamSeeker) *audi
 	return &audioPanel{sampleRate, streamer, ctrl, resampler, volume}
 }
 
-func (ap *audioPanel) play() {
+func (ap *audioPanel) play(resampled *beep.Resampler) {
 	// speaker.Play(ap.volume)
 
 	// speaker.Play(beep.Seq(streamer, beep.Callback(func() {
 	// 	log.Println("done playing")
 	// 	done <- true
 	// })))
-
-	speaker.Play(beep.Seq(ap.streamer, beep.Callback(func() {
-		log.Println("done playing")
-		done <- true
-	})))
+	if resampled != nil {
+		speaker.Play(beep.Seq(resampled, beep.Callback(func() {
+			log.Println("done playing")
+			done <- true
+		})))
+	} else {
+		speaker.Play(beep.Seq(ap.streamer, beep.Callback(func() {
+			log.Println("done playing")
+			done <- true
+		})))
+	}
 }
 
 func LoadAndPlay(path string) {
 	openFileForPlaying(path, &streamer, &format)
-	speaker.Clear()
-	ap := newAudioPanel(format.SampleRate, streamer)
-
-	// ******************************
-	// set that start position of the stream. should be done before play() otherwise it speeds up
-	// speaker.Lock()
-	newPos := ap.streamer.Position()
-	newPos += ap.sampleRate.N(time.Minute * 2)
-	if newPos < 0 {
-		newPos = 0
-	}
-	if newPos >= ap.streamer.Len() {
-		newPos = ap.streamer.Len() - 1
-	}
-	if err := ap.streamer.Seek(newPos); err != nil {
-		log.Fatal(err)
-	}
-	// speaker.Unlock()
-	// ******************************
-	ap.play()
-	playing = true
 
 	// streamer.Seek(0)
 
@@ -82,7 +68,7 @@ func LoadAndPlay(path string) {
 			return
 		case <-time.After(time.Second):
 			speaker.Lock()
-			fmt.Println(format.SampleRate.D(streamer.Position()).Round(time.Second))
+			// fmt.Println(format.SampleRate.D(streamer.Position()).Round(time.Second))
 			speaker.Unlock()
 		}
 	}
@@ -99,7 +85,11 @@ func openFileForPlaying(path string, streamer *beep.StreamSeekCloser, format *be
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	var oldSampleRate beep.SampleRate
+	var resampled *beep.Resampler = nil
+	if speakerInitialised {
+		oldSampleRate = format.SampleRate
+	}
 	*streamer, *format, err = mp3.Decode(f)
 	if err != nil {
 		log.Fatal(err)
@@ -107,10 +97,40 @@ func openFileForPlaying(path string, streamer *beep.StreamSeekCloser, format *be
 	}
 
 	if !speakerInitialised {
-		err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-		if err != nil {
-			log.Fatal(err)
-		}
+		initialiseSpeaker()
+	} else {
+		fmt.Println("old sample rate: " + strconv.Itoa(int(oldSampleRate)))
+		fmt.Println("new sample rate: " + strconv.Itoa(int(format.SampleRate)))
+		resampled = beep.Resample(6, format.SampleRate, oldSampleRate, *streamer)
+	}
+
+	ap := newAudioPanel(format.SampleRate, *streamer)
+	// ******************************
+	// set that start position of the stream. should be done before play() otherwise it speeds up
+	speaker.Lock()
+	newPos := ap.streamer.Position()
+	newPos += ap.sampleRate.N(time.Minute * 0)
+	if newPos < 0 {
+		newPos = 0
+	}
+	if newPos >= ap.streamer.Len() {
+		newPos = ap.streamer.Len() - 1
+	}
+	if err := ap.streamer.Seek(newPos); err != nil {
+		log.Fatal(err)
+	}
+	speaker.Unlock()
+	// ******************************
+	ap.play(resampled)
+	playing = true
+}
+
+func initialiseSpeaker() {
+	// log.Fatalln(format.SampleRate)
+	err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/5))
+	// err := speaker.Init(44100, format.SampleRate.N(time.Second/5))
+	if err == nil {
 		speakerInitialised = true
 	}
+
 }
