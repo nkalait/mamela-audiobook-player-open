@@ -2,7 +2,6 @@ package ui
 
 import (
 	"image/color"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -11,10 +10,13 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
-const rootPath = "/Users/nada/Dev/mamela/books"
+var rootPath = "/Users/nada/Dev/mamela/books"
 
 var allowedFileTypes = []string{".mp3"}
 
@@ -31,29 +33,53 @@ var (
 )
 
 func BuildUI(appLabel string) {
+	updateBookListChannel := make(chan bool)
 	mamelaApp := app.New()
 	window := mamelaApp.NewWindow(appLabel)
-
-	// button1 := widget.NewButton("click me", func() {
-	// 	go func() {
-	// 		audio.Stop()
-	// 		log.Println("play file 1")
-	// 		audio.LoadAndPlay(audioFile1)
-	// 	}()
-	// })
-
-	// button2 := widget.NewButton("click me", func() {
-	// 	go func() {
-	// 		audio.Stop()
-	// 		log.Println("play file 2")
-	// 		audio.LoadAndPlay(audioFile2)
-	// 	}()
-	// })
-
-	main := container.New(layout.NewHBoxLayout(), createBookList())
-
+	bookListVBox := container.New(layout.NewVBoxLayout())
+	initBookListPane(bookListVBox, window, updateBookListChannel)
+	updateBookList(bookListVBox)
+	main := container.New(layout.NewHBoxLayout(), bookListVBox)
 	window.SetContent(main)
+
+	go func() {
+		for update := range updateBookListChannel {
+			if update {
+				bookListVBox.Objects = bookListVBox.Objects[:0]
+				initBookListPane(bookListVBox, window, updateBookListChannel)
+				updateBookList(bookListVBox)
+			}
+		}
+	}()
+	window.Resize(fyne.NewSize(600, 600))
 	window.ShowAndRun()
+}
+
+func initBookListPane(bookListVBox *fyne.Container, window fyne.Window, updateChannel chan bool) {
+	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
+	bookListHeaderTxt.TextSize = 24
+	bookListHeaderTxt.TextStyle.Bold = true
+	top := container.New(layout.NewHBoxLayout(), bookListHeaderTxt, layout.NewSpacer(), layout.NewSpacer(), createFileDialogButton(window, updateChannel))
+	bookListVBox.Add(top)
+}
+
+func createFileDialogButton(w fyne.Window, updateChannel chan bool) *widget.Button {
+	icon := theme.FolderOpenIcon()
+	button := widget.NewButtonWithIcon("", icon, func() {
+		dialog.ShowFolderOpen(func(dir fyne.ListableURI, err error) {
+			if err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			if dir != nil {
+				rootPath = dir.Path() // here value of save_dir shall be updated!
+				updateChannel <- true
+			}
+			// fmt.Println(rootPath)
+		}, w)
+	})
+
+	return button
 }
 
 type book struct {
@@ -65,12 +91,13 @@ func setBookListHeader() string {
 	return "Loaded Books"
 }
 
-func getAudioBooks() []book {
+func getAudioBooks() ([]book, error) {
 	var bookList = []book{}
 	// d, err := os.Open(dirname)
 	rootFolderEntries, err := os.ReadDir(rootPath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
+		// log.Fatal(err)
 	}
 
 	for _, b := range rootFolderEntries {
@@ -87,7 +114,7 @@ func getAudioBooks() []book {
 									title:    b.Name(),
 									fullPath: bookFullPath + "/" + i.Name(),
 								}
-								println(a.fullPath)
+								// println(a.fullPath)
 								bookList = append(bookList, a)
 								break
 							}
@@ -97,24 +124,18 @@ func getAudioBooks() []book {
 			}
 		}
 	}
-	return bookList
+	return bookList, nil
 }
 
-func createBookList() fyne.CanvasObject {
-	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
-	bookListHeaderTxt.TextSize = 24
-	bookListHeaderTxt.TextStyle.Bold = true
-	// audioFile1 := "/Users/nada/Dev/mamela/gunshot.mp3"
-	// audioFile2 := "/Users/nada/Dev/mamela/song.mp3"
-
-	books := getAudioBooks()
-	bookListVBox := container.New(layout.NewVBoxLayout(), bookListHeaderTxt)
-	for _, v := range books {
-		log.Println("laying out " + v.fullPath)
-		bookTileLayout := NewMyListItemWidget(v)
-		bookListVBox.Add(bookTileLayout)
+func updateBookList(bookListVBox *fyne.Container) {
+	books, err := getAudioBooks()
+	if err == nil {
+		for _, v := range books {
+			// log.Println("laying out " + v.fullPath)
+			bookTileLayout := NewMyListItemWidget(v)
+			bookListVBox.Add(bookTileLayout)
+		}
 	}
-	return bookListVBox
 }
 
 // func createPlayingLayout() fyne.Layout {

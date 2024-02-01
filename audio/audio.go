@@ -81,22 +81,32 @@ func Stop() {
 }
 
 func openFileForPlaying(path string, streamer *beep.StreamSeekCloser, format *beep.Format) {
+	fmt.Println(1)
 	f, err := os.Open(path)
+	fmt.Println(2)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(3)
 	var oldSampleRate beep.SampleRate
+	fmt.Println(4)
 	var resampled *beep.Resampler = nil
+	fmt.Println(5)
 	if speakerInitialised {
+		fmt.Println(6)
 		oldSampleRate = format.SampleRate
 	}
+	fmt.Println(7)
 	*streamer, *format, err = mp3.Decode(f)
+	fmt.Println(8)
 	if err != nil {
 		log.Fatal(err)
 
 	}
+	fmt.Println(9)
 
 	if !speakerInitialised {
+		fmt.Println(10)
 		initialiseSpeaker()
 	} else {
 		fmt.Println("old sample rate: " + strconv.Itoa(int(oldSampleRate)))
@@ -126,7 +136,6 @@ func openFileForPlaying(path string, streamer *beep.StreamSeekCloser, format *be
 }
 
 func initialiseSpeaker() {
-	// log.Fatalln(format.SampleRate)
 	err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/5))
 	// err := speaker.Init(44100, format.SampleRate.N(time.Second/5))
 	if err == nil {
