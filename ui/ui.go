@@ -16,7 +16,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var rootPath = "/Users/nada/Dev/mamela/books"
+var rootPath = ""
 
 var allowedFileTypes = []string{".mp3"}
 
@@ -32,7 +32,8 @@ var (
 	BgColourLight = colourDarkThemeBlackLight
 )
 
-func BuildUI(appLabel string) {
+func BuildUI(appLabel string, rootP string) {
+	rootPath = rootP
 	updateBookListChannel := make(chan bool)
 	mamelaApp := app.New()
 	window := mamelaApp.NewWindow(appLabel)
@@ -72,10 +73,9 @@ func createFileDialogButton(w fyne.Window, updateChannel chan bool) *widget.Butt
 				return
 			}
 			if dir != nil {
-				rootPath = dir.Path() // here value of save_dir shall be updated!
+				rootPath = dir.Path()
 				updateChannel <- true
 			}
-			// fmt.Println(rootPath)
 		}, w)
 	})
 
@@ -93,11 +93,9 @@ func setBookListHeader() string {
 
 func getAudioBooks() ([]book, error) {
 	var bookList = []book{}
-	// d, err := os.Open(dirname)
 	rootFolderEntries, err := os.ReadDir(rootPath)
 	if err != nil {
 		return nil, err
-		// log.Fatal(err)
 	}
 
 	for _, b := range rootFolderEntries {
@@ -114,7 +112,6 @@ func getAudioBooks() ([]book, error) {
 									title:    b.Name(),
 									fullPath: bookFullPath + "/" + i.Name(),
 								}
-								// println(a.fullPath)
 								bookList = append(bookList, a)
 								break
 							}
@@ -131,7 +128,6 @@ func updateBookList(bookListVBox *fyne.Container) {
 	books, err := getAudioBooks()
 	if err == nil {
 		for _, v := range books {
-			// log.Println("laying out " + v.fullPath)
 			bookTileLayout := NewMyListItemWidget(v)
 			bookListVBox.Add(bookTileLayout)
 		}
