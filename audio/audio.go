@@ -20,7 +20,6 @@ type audioPanel struct {
 	streamer beep.StreamSeeker
 	ctrl     *beep.Ctrl
 	player   State
-	// resampler *beep.Resampler
 }
 
 func newAudioPanel(format beep.Format, streamer beep.StreamSeeker) *audioPanel {

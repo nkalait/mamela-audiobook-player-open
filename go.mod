@@ -8,7 +8,6 @@ require (
 )
 
 require (
-	fyne.io/fyne v1.4.3
 	fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ebitengine/oto/v3 v3.1.0 // indirect

@@ -5,34 +5,31 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type MyListItemWidget struct {
 	widget.BaseWidget
-	// Title *canvas.Text
-	Title *widget.Button
+	Title  *widget.Label
+	Button *widget.Button
 }
 
 func NewMyListItemWidget(b book) *MyListItemWidget {
 	item := &MyListItemWidget{
-		Title: widget.NewButton(b.title, func() {
-			// go func() {
+		Title: widget.NewLabel(cases.Title(language.English).String(b.title)),
+		Button: widget.NewButton("", func() {
 			audio.LoadAndPlay(b.fullPath)
-			// }()
 		}),
 	}
-	item.Title.Alignment = widget.ButtonAlignLeading
-	// item.Title = 18
+	item.Title.Truncation = fyne.TextTruncateEllipsis
+	// item.Title.Alignment = widget.ButtonAlignLeading
 	item.ExtendBaseWidget(item)
 	return item
 }
 
 func (item *MyListItemWidget) CreateRenderer() fyne.WidgetRenderer {
-	v := container.New(layout.NewPaddedLayout(), layout.NewSpacer(), item.Title)
-	// content := container.New(layout.NewHBoxLayout(), layout.NewSpacer(), item.Title, layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer(), layout.NewSpacer())
-	// a := container.NewBo(nil, nil, nil, item.Title)
-	// c := container.NewStack(canvas.NewRectangle(BgColourLight), v)
-	return widget.NewSimpleRenderer(v)
+	stack := container.NewStack(item.Button, item.Title)
+	return widget.NewSimpleRenderer(stack)
 }
