@@ -40,6 +40,7 @@ func BuildUI(appLabel string, rootP string) {
 	rootPath = rootP
 	updateBookListChannel := make(chan bool)
 	mamelaApp := app.New()
+	mamelaApp.Settings().SetTheme(mamelaAppTheme())
 	window := mamelaApp.NewWindow(appLabel)
 
 	bookListVBox := container.New(layout.NewVBoxLayout())
