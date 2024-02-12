@@ -40,30 +40,36 @@ func BuildUI(appLabel string, rootP string) {
 	rootPath = rootP
 	updateBookListChannel := make(chan bool)
 	mamelaApp := app.New()
-	mamelaApp.Settings().SetTheme(mamelaAppTheme())
 	window := mamelaApp.NewWindow(appLabel)
 
-	bookListVBox := container.New(layout.NewVBoxLayout())
-	bookListScroller := container.NewVScroll(bookListVBox)
-	// bookListVBox.Resize(fyne.NewSize(600, 600))
-	// bookListScroller.Resize(fyne.NewSize(600, 600))
-	bookListVBoxContainerOuter := container.NewStack(canvas.NewRectangle(BgColourLight))
-	initBookPane(window, bookListScroller, bookListVBoxContainerOuter, updateBookListChannel)
-	updateBookList(bookListVBox)
+	bookListContainer := initBookList(updateBookListChannel)
 
-	main := container.New(layout.NewHBoxLayout(), bookListVBoxContainerOuter)
+	currentlyPlayingContainer := createPlayingLayout()
+	bodyParts := container.NewBorder(generateBookListContainerTop(window, updateBookListChannel), nil, bookListContainer, nil, currentlyPlayingContainer)
+	bodyBg := canvas.NewRectangle(BgColour)
+	body := container.NewStack(bodyBg, bodyParts)
+	main := container.NewGridWithColumns(1, body)
 	window.SetContent(main)
 
+	window.Resize(fyne.NewSize(600, 300))
+	window.ShowAndRun()
+}
+
+func initBookList(updateChannel chan bool) *fyne.Container {
+	bookListVBox := container.New(layout.NewVBoxLayout())
+
+	bookListContainer := initBookPane(bookListVBox)
+	updateBookList(bookListVBox)
+
 	go func() {
-		for update := range updateBookListChannel {
+		for update := range updateChannel {
 			if update {
 				bookListVBox.Objects = bookListVBox.Objects[:0]
 				updateBookList(bookListVBox)
 			}
 		}
 	}()
-	window.Resize(fyne.NewSize(600, 300))
-	window.ShowAndRun()
+	return bookListContainer
 }
 
 func setBookListHeader() string {
@@ -74,18 +80,19 @@ func generateBookListContainerTop(window fyne.Window, updateChannel chan bool) *
 	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
 	bookListHeaderTxt.TextSize = 24
 	bookListHeaderTxt.TextStyle.Bold = true
-	top := container.NewHBox(bookListHeaderTxt, container.NewVBox(createFileDialogButton(window, updateChannel)))
+	spacer := canvas.NewText("    ", color.Transparent)
+	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createFileDialogButton(window, updateChannel)))
 	return top
 }
 
-func initBookPane(window fyne.Window, bookListScroller fyne.Widget, bookListContainerOuter *fyne.Container, updateChannel chan bool) {
-	bookListVBoxContainerTop := generateBookListContainerTop(window, updateChannel)
-	// bookListVBoxContainerTop.Resize(fyne.NewSize(250, 40))
-	bookListScroller.Resize(fyne.NewSize(210, 400))
-	bookListScroller.Move(fyne.NewPos(0, 40))
-	bookListVBoxContainerContent := container.NewWithoutLayout(container.NewHBox(bookListVBoxContainerTop), bookListScroller)
-	bookListVBoxContainerPadded := container.New(layout.NewPaddedLayout(), bookListVBoxContainerContent)
-	bookListContainerOuter.Add(bookListVBoxContainerPadded)
+func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
+	// TODO the dots below are just to give the scroller the desired width, NEED TO FIND A WAY TO DO THIS BETTER!!
+	dots := canvas.NewText("..........................................................", color.Transparent)
+	bookListScroller := container.NewVScroll(bookListVBox)
+	bookListVBoxContainerPadded := container.NewPadded(dots, bookListScroller)
+	bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
+	bookListContainer.Add(bookListVBoxContainerPadded)
+	return bookListContainer
 }
 
 func createFileDialogButton(w fyne.Window, updateChannel chan bool) *widget.Button {
@@ -105,8 +112,8 @@ func createFileDialogButton(w fyne.Window, updateChannel chan bool) *widget.Butt
 	return button
 }
 
-// func createPlayingLayout() fyne.Layout {
-// 	playingVBox := layout.NewVBoxLayout()
-
-// 	return playingVBox
-// }
+func createPlayingLayout() *fyne.Container {
+	playingVBox := container.NewVBox()
+	playingVBox.Add(canvas.NewText("now playing", colourDarkThemeWhite))
+	return playingVBox
+}
