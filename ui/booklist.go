@@ -1,12 +1,79 @@
 package ui
 
 import (
+	"image/color"
+	"mamela/types"
 	"os"
 	"path/filepath"
 	"slices"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
+
+var updateBookListChannel = make(chan bool)
+
+func initBookList() *fyne.Container {
+	bookListVBox := container.New(layout.NewVBoxLayout())
+
+	bookListContainer := initBookPane(bookListVBox)
+	updateBookList(bookListVBox)
+
+	go func() {
+		for update := range updateBookListChannel {
+			if update {
+				bookListVBox.Objects = bookListVBox.Objects[:0]
+				updateBookList(bookListVBox)
+			}
+		}
+	}()
+	return bookListContainer
+}
+
+func setBookListHeader() string {
+	return "Loaded Books"
+}
+
+func generateBookListContainerTop(window fyne.Window) *fyne.Container {
+	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
+	bookListHeaderTxt.TextSize = 24
+	bookListHeaderTxt.TextStyle.Bold = true
+	spacer := canvas.NewText("    ", color.Transparent)
+	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createFileDialogButton(window)))
+	return top
+}
+
+func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
+	// TODO the dots below are just to give the scroller the desired width, NEED TO FIND A WAY TO DO THIS BETTER!!
+	dots := canvas.NewText("..........................................................", color.Transparent)
+	bookListScroller := container.NewVScroll(bookListVBox)
+	bookListVBoxContainerPadded := container.NewPadded(dots, bookListScroller)
+	bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
+	bookListContainer.Add(bookListVBoxContainerPadded)
+	return bookListContainer
+}
+
+func createFileDialogButton(w fyne.Window) *widget.Button {
+	icon := theme.FolderOpenIcon()
+	button := widget.NewButtonWithIcon("", icon, func() {
+		dialog.ShowFolderOpen(func(dir fyne.ListableURI, err error) {
+			if err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			if dir != nil {
+				rootPath = dir.Path()
+				updateBookListChannel <- true
+			}
+		}, w)
+	})
+	return button
+}
 
 func updateBookList(bookListVBox *fyne.Container) {
 	books, err := getAudioBooks()
@@ -18,8 +85,8 @@ func updateBookList(bookListVBox *fyne.Container) {
 	}
 }
 
-func getAudioBooks() ([]book, error) {
-	var bookList = []book{}
+func getAudioBooks() ([]types.Book, error) {
+	var bookList = []types.Book{}
 	rootFolderEntries, err := os.ReadDir(rootPath)
 	if err != nil {
 		return nil, err
@@ -35,9 +102,9 @@ func getAudioBooks() ([]book, error) {
 					if err == nil {
 						if i.Mode().IsRegular() {
 							if slices.Contains(allowedFileTypes, filepath.Ext(i.Name())) {
-								a := book{
-									title:    b.Name(),
-									fullPath: bookFullPath + "/" + i.Name(),
+								a := types.Book{
+									Title:    b.Name(),
+									FullPath: bookFullPath + "/" + i.Name(),
 								}
 								bookList = append(bookList, a)
 								break

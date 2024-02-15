@@ -2,6 +2,7 @@ package audio
 
 import (
 	"log"
+	"mamela/types"
 	"time"
 
 	"github.com/gopxl/beep"
@@ -37,7 +38,7 @@ func stop() {
 	}
 }
 
-func LoadAndPlay(path string) {
+func LoadAndPlay(playingBook types.PlayingBook) {
 	if ap != nil {
 		stop()
 	}
@@ -51,6 +52,7 @@ func LoadAndPlay(path string) {
 			case <-time.After(time.Second):
 				speaker.Lock()
 				if ap != nil {
+					updateNowPlayingChannel
 					log.Println(ap.format.SampleRate.D(ap.streamer.Position()).Round(time.Second))
 				}
 				speaker.Unlock()
@@ -58,5 +60,5 @@ func LoadAndPlay(path string) {
 
 		}
 	}()
-	openFileForPlaying(path)
+	openFileForPlaying(playingBook.FullPath)
 }

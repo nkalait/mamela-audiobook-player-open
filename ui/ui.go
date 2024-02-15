@@ -7,16 +7,17 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 )
 
-type book struct {
-	title    string
-	fullPath string
-}
+// type Book struct {
+// 	title    string
+// 	fullPath string
+// }
+
+// type PlayingBook struct {
+// 	Book
+// 	position uint16
+// }
 
 var rootPath = ""
 
@@ -38,14 +39,13 @@ var (
 
 func BuildUI(appLabel string, rootP string) {
 	rootPath = rootP
-	updateBookListChannel := make(chan bool)
 	mamelaApp := app.New()
 	window := mamelaApp.NewWindow(appLabel)
 
-	bookListContainer := initBookList(updateBookListChannel)
+	bookListContainer := initBookList()
 
 	currentlyPlayingContainer := createPlayingLayout()
-	bodyParts := container.NewBorder(generateBookListContainerTop(window, updateBookListChannel), nil, bookListContainer, nil, currentlyPlayingContainer)
+	bodyParts := container.NewBorder(generateBookListContainerTop(window), nil, bookListContainer, nil, currentlyPlayingContainer)
 	bodyBg := canvas.NewRectangle(BgColour)
 	body := container.NewStack(bodyBg, bodyParts)
 	main := container.NewGridWithColumns(1, body)
@@ -53,67 +53,4 @@ func BuildUI(appLabel string, rootP string) {
 
 	window.Resize(fyne.NewSize(600, 300))
 	window.ShowAndRun()
-}
-
-func initBookList(updateChannel chan bool) *fyne.Container {
-	bookListVBox := container.New(layout.NewVBoxLayout())
-
-	bookListContainer := initBookPane(bookListVBox)
-	updateBookList(bookListVBox)
-
-	go func() {
-		for update := range updateChannel {
-			if update {
-				bookListVBox.Objects = bookListVBox.Objects[:0]
-				updateBookList(bookListVBox)
-			}
-		}
-	}()
-	return bookListContainer
-}
-
-func setBookListHeader() string {
-	return "Loaded Books"
-}
-
-func generateBookListContainerTop(window fyne.Window, updateChannel chan bool) *fyne.Container {
-	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
-	bookListHeaderTxt.TextSize = 24
-	bookListHeaderTxt.TextStyle.Bold = true
-	spacer := canvas.NewText("    ", color.Transparent)
-	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createFileDialogButton(window, updateChannel)))
-	return top
-}
-
-func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
-	// TODO the dots below are just to give the scroller the desired width, NEED TO FIND A WAY TO DO THIS BETTER!!
-	dots := canvas.NewText("..........................................................", color.Transparent)
-	bookListScroller := container.NewVScroll(bookListVBox)
-	bookListVBoxContainerPadded := container.NewPadded(dots, bookListScroller)
-	bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
-	bookListContainer.Add(bookListVBoxContainerPadded)
-	return bookListContainer
-}
-
-func createFileDialogButton(w fyne.Window, updateChannel chan bool) *widget.Button {
-	icon := theme.FolderOpenIcon()
-	button := widget.NewButtonWithIcon("", icon, func() {
-		dialog.ShowFolderOpen(func(dir fyne.ListableURI, err error) {
-			if err != nil {
-				dialog.ShowError(err, w)
-				return
-			}
-			if dir != nil {
-				rootPath = dir.Path()
-				updateChannel <- true
-			}
-		}, w)
-	})
-	return button
-}
-
-func createPlayingLayout() *fyne.Container {
-	playingVBox := container.NewVBox()
-	playingVBox.Add(canvas.NewText("now playing", colourDarkThemeWhite))
-	return playingVBox
 }

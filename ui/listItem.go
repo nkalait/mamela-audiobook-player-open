@@ -2,6 +2,7 @@ package ui
 
 import (
 	"mamela/audio"
+	"mamela/types"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -16,15 +17,16 @@ type MyListItemWidget struct {
 	Button *widget.Button
 }
 
-func NewMyListItemWidget(b book) *MyListItemWidget {
+func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	item := &MyListItemWidget{
-		Title: widget.NewLabel(cases.Title(language.English).String(b.title)),
+		Title: widget.NewLabel(cases.Title(language.English).String(b.Title)),
 		Button: widget.NewButton("", func() {
-			audio.LoadAndPlay(b.fullPath)
+			var playingBook types.PlayingBook = types.PlayingBook{b, 0}
+			updateNowPlayingChannel <- playingBook
+			audio.LoadAndPlay(playingBook)
 		}),
 	}
 	item.Title.Truncation = fyne.TextTruncateEllipsis
-	// item.Title.Alignment = widget.ButtonAlignLeading
 	item.ExtendBaseWidget(item)
 	return item
 }
