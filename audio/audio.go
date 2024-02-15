@@ -30,7 +30,6 @@ func newAudioPanel(format beep.Format, streamer beep.StreamSeeker) *audioPanel {
 
 func (ap *audioPanel) play(resampled *beep.Resampler) {
 	speaker.Clear()
-	ap.streamer.Seek(0)
 	speaker.Play(beep.Seq(resampled, beep.Callback(func() {
 		log.Println("done playing")
 		done <- true
@@ -68,5 +67,5 @@ func openFileForPlaying(path string) {
 		resampled = beep.Resample(6, format.SampleRate, ap.format.SampleRate, streamer)
 		ap.streamer = streamer
 	}
-	startPlaying(2, resampled)
+	startPlaying(115, resampled, format)
 }

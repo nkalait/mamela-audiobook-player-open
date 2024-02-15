@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"fmt"
 	"mamela/types"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -10,12 +12,12 @@ import (
 	"golang.org/x/text/language"
 )
 
-var updateNowPlayingChannel = make(chan types.PlayingBook)
 var bookTitle *canvas.Text
+var playingPosition *canvas.Text
 
-func createPlayingLayout() *fyne.Container {
+func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	initUI()
-	playingVBox := container.NewVBox(bookTitle)
+	playingVBox := container.NewVBox(bookTitle, playingPosition)
 
 	go func() {
 		for playingBook := range updateNowPlayingChannel {
@@ -27,6 +29,7 @@ func createPlayingLayout() *fyne.Container {
 
 func initUI() {
 	initTitle()
+	initPlayingPosition()
 }
 
 func initTitle() {
@@ -36,11 +39,26 @@ func initTitle() {
 	bookTitle.Alignment = fyne.TextAlignCenter
 }
 
+func initPlayingPosition() {
+	playingPosition = canvas.NewText("", textColour)
+	playingPosition.TextSize = 24
+	playingPosition.Alignment = fyne.TextAlignCenter
+}
+
 func updatePlaying(p types.PlayingBook) {
 	updateTitle(p.Title)
+	updatePlayingPosition(p.Position)
 }
 
 func updateTitle(title string) {
 	bookTitle.Text = cases.Title(language.English).String(title)
 	bookTitle.Refresh()
+}
+
+func updatePlayingPosition(p time.Duration) {
+	var h int = int(p.Seconds()) / 3600
+	var m int = int(p.Seconds()) / 60
+	var s int = int(p.Seconds()) % 60
+	playingPosition.Text = fmt.Sprint(h) + ":" + fmt.Sprint(m) + ":" + fmt.Sprint(s)
+	playingPosition.Refresh()
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"mamela/types"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -37,14 +38,14 @@ var (
 	BgColourLighter = colourDarkThemeBlackLighter
 )
 
-func BuildUI(appLabel string, rootP string) {
+func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.PlayingBook) {
 	rootPath = rootP
 	mamelaApp := app.New()
 	window := mamelaApp.NewWindow(appLabel)
 
-	bookListContainer := initBookList()
+	bookListContainer := initBookList(updateNowPlayingChannel)
 
-	currentlyPlayingContainer := createPlayingLayout()
+	currentlyPlayingContainer := createPlayingLayout(updateNowPlayingChannel)
 	bodyParts := container.NewBorder(generateBookListContainerTop(window), nil, bookListContainer, nil, currentlyPlayingContainer)
 	bodyBg := canvas.NewRectangle(BgColour)
 	body := container.NewStack(bodyBg, bodyParts)

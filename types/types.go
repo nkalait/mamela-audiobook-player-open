@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 type Book struct {
 	Title    string
 	FullPath string
@@ -7,5 +9,5 @@ type Book struct {
 
 type PlayingBook struct {
 	Book
-	Position uint16
+	Position time.Duration
 }

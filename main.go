@@ -1,6 +1,9 @@
 package main
 
-import "mamela/ui"
+import (
+	"mamela/types"
+	"mamela/ui"
+)
 
 // Basically, this app plays audio books.
 // There is one root folder in which there are other folders.
@@ -14,6 +17,8 @@ const appLabel = "Mamela"
 // const rootPath = "/Users/nada/Desktop/audio books"
 const rootPath = "/Users/nada/Dev/mamela/audio books"
 
+var updateNowPlayingChannel = make(chan types.PlayingBook)
+
 func main() {
-	ui.BuildUI(appLabel, rootPath)
+	ui.BuildUI(appLabel, rootPath, updateNowPlayingChannel)
 }

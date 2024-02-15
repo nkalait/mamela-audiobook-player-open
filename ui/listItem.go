@@ -17,13 +17,13 @@ type MyListItemWidget struct {
 	Button *widget.Button
 }
 
-func NewMyListItemWidget(b types.Book) *MyListItemWidget {
+func NewMyListItemWidget(b types.Book, updateNowPlayingChannel chan types.PlayingBook) *MyListItemWidget {
 	item := &MyListItemWidget{
 		Title: widget.NewLabel(cases.Title(language.English).String(b.Title)),
 		Button: widget.NewButton("", func() {
 			var playingBook types.PlayingBook = types.PlayingBook{b, 0}
 			updateNowPlayingChannel <- playingBook
-			audio.LoadAndPlay(playingBook)
+			audio.LoadAndPlay(playingBook, updateNowPlayingChannel)
 		}),
 	}
 	item.Title.Truncation = fyne.TextTruncateEllipsis

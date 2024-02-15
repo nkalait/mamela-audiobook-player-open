@@ -18,17 +18,17 @@ import (
 
 var updateBookListChannel = make(chan bool)
 
-func initBookList() *fyne.Container {
+func initBookList(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	bookListVBox := container.New(layout.NewVBoxLayout())
 
 	bookListContainer := initBookPane(bookListVBox)
-	updateBookList(bookListVBox)
+	updateBookList(bookListVBox, updateNowPlayingChannel)
 
 	go func() {
 		for update := range updateBookListChannel {
 			if update {
 				bookListVBox.Objects = bookListVBox.Objects[:0]
-				updateBookList(bookListVBox)
+				updateBookList(bookListVBox, updateNowPlayingChannel)
 			}
 		}
 	}()
@@ -75,11 +75,11 @@ func createFileDialogButton(w fyne.Window) *widget.Button {
 	return button
 }
 
-func updateBookList(bookListVBox *fyne.Container) {
+func updateBookList(bookListVBox *fyne.Container, updateNowPlayingChannel chan types.PlayingBook) {
 	books, err := getAudioBooks()
 	if err == nil {
 		for _, v := range books {
-			bookTileLayout := NewMyListItemWidget(v)
+			bookTileLayout := NewMyListItemWidget(v, updateNowPlayingChannel)
 			bookListVBox.Add(bookTileLayout)
 		}
 	}
