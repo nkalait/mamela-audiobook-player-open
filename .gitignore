@@ -21,3 +21,6 @@
 go.work
 
 *.mp3
+*.m4a
+*.m4b
+*.m4c
