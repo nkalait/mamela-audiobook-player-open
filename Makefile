@@ -1,5 +1,5 @@
 BINARY_NAME=mamela_audiobook_player
-LIB=app/lib
+LIB=app/lib/mac
 
 build:
 	mkdir -p ${LIB}
@@ -9,6 +9,8 @@ build:
 	GOARCH=amd64 GOOS=darwin go build -o app/${BINARY_NAME}-darwin main.go
 #	GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux main.go
 #	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows main.go
+
+	install_name_tool -change @loader_path/libbass.dylib @loader_path/lib/mac/libbass.dylib app/mamela_audiobook_player-darwin
 
 run: build
 	./${BINARY_NAME}
