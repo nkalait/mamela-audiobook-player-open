@@ -21,7 +21,7 @@ func panicError(err error) {
 func loadPlugins() []uint32 {
 	// pluginLibbass, err := bass.PluginLoad("libbass.dylib", bass.StreamDecode)
 	// panicError(err)
-	pluginLibbassAac, err := bass.PluginLoad("libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, err := bass.PluginLoad("lib/libbass_aac.dylib", bass.StreamDecode)
 	panicError(err)
 
 	plugins := make([]uint32, 2)
