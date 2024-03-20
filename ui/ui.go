@@ -10,19 +10,7 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
-// type Book struct {
-// 	title    string
-// 	fullPath string
-// }
-
-// type PlayingBook struct {
-// 	Book
-// 	position uint16
-// }
-
 var rootPath = ""
-
-var allowedFileTypes = []string{".mp3"}
 
 var (
 	colourDarkThemeBlack        = color.RGBA{33, 33, 33, 255}

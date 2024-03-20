@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"mamela/filetypes"
 	"mamela/types"
 	"os"
 	"path/filepath"
@@ -101,7 +102,7 @@ func getAudioBooks() ([]types.Book, error) {
 					i, err := bookFile.Info()
 					if err == nil {
 						if i.Mode().IsRegular() {
-							if slices.Contains(allowedFileTypes, filepath.Ext(i.Name())) {
+							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(i.Name())) {
 								a := types.Book{
 									Title:    b.Name(),
 									FullPath: bookFullPath + "/" + i.Name(),
