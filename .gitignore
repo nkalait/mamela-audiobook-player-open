@@ -20,6 +20,8 @@
 # Go workspace file
 go.work
 
+*mamela_audiobook_player*
+
 *.mp3
 *.m4a
 *.m4b
