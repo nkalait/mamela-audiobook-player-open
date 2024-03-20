@@ -23,6 +23,7 @@ go.work
 *mamela_audiobook_player*
 /**/app
 
+/**/audio books
 *.mp3
 *.m4a
 *.m4b

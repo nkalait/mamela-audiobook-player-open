@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mamela/audio"
 	"mamela/types"
 	"mamela/ui"
 )
@@ -20,5 +21,8 @@ const rootPath = "/Users/nada/Dev/mamela/audio books"
 var updateNowPlayingChannel = make(chan types.PlayingBook)
 
 func main() {
+	go func() {
+		audio.Initiate()
+	}()
 	ui.BuildUI(appLabel, rootPath, updateNowPlayingChannel)
 }
