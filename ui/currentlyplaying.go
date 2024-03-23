@@ -59,6 +59,19 @@ func updatePlayingPosition(p time.Duration) {
 	var h int = int(p.Seconds()) / 3600
 	var m int = int(p.Seconds()) / 60
 	var s int = int(p.Seconds()) % 60
-	playingPosition.Text = fmt.Sprint(h) + ":" + fmt.Sprint(m) + ":" + fmt.Sprint(s)
+
+	sh := fmt.Sprint(h)
+	if h < 10 {
+		sh = "0" + fmt.Sprint(h)
+	}
+	sm := fmt.Sprint(m)
+	if m < 10 {
+		sm = "0" + fmt.Sprint(m)
+	}
+	ss := fmt.Sprint(s)
+	if s < 10 {
+		ss = "0" + fmt.Sprint(s)
+	}
+	playingPosition.Text = sh + " : " + sm + " : " + ss
 	playingPosition.Refresh()
 }
