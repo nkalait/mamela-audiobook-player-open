@@ -3,7 +3,7 @@ The aim is to build, using Go, an audio book player that works just right on Lin
 
 For now I am testing using Mac and it works but there is still a lot to do.
 
-The code is a bit messy since I was first testing out some stuff.
+The code is a bit messy since I was first testing out some stuff (I am kinda new to Golang).
 
 Any and all assistance is welcome
 
