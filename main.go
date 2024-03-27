@@ -15,7 +15,6 @@ import (
 const appLabel = "Mamela"
 
 // The root folder where audio books will be place, this variable here is for testing only
-// const rootPath = "/Users/nada/Desktop/audio books"
 const rootPath = "/some_path"
 
 var updateNowPlayingChannel = make(chan types.PlayingBook)
