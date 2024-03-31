@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
+// Path to folder where audiobooks are stored
 var rootPath = ""
 
 var (
@@ -26,20 +27,29 @@ var (
 	BgColourLighter = colourDarkThemeBlackLighter
 )
 
+var (
+	MamelaApp  fyne.App
+	MainWindow fyne.Window
+)
+
 func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.PlayingBook) {
 	rootPath = rootP
-	mamelaApp := app.New()
-	window := mamelaApp.NewWindow(appLabel)
+	MamelaApp = app.New()
+	MainWindow = MamelaApp.NewWindow(appLabel)
 
-	bookListContainer := initBookList(updateNowPlayingChannel)
+	// UI to show list of audiobooks
+	bookListContainer := initBookList()
 
+	// Part of UI to place UI elements pertaining to currently playing audiobook
 	currentlyPlayingContainer := createPlayingLayout(updateNowPlayingChannel)
-	bodyParts := container.NewBorder(generateBookListContainerTop(window), nil, bookListContainer, nil, currentlyPlayingContainer)
+
+	// Place all parts UI parts together
+	bodyParts := container.NewBorder(generateBookListContainerTop(), nil, bookListContainer, nil, currentlyPlayingContainer)
+
 	bodyBg := canvas.NewRectangle(BgColour)
 	body := container.NewStack(bodyBg, bodyParts)
 	main := container.NewGridWithColumns(1, body)
-	window.SetContent(main)
-
-	window.Resize(fyne.NewSize(600, 300))
-	window.ShowAndRun()
+	MainWindow.SetContent(main)
+	MainWindow.Resize(fyne.NewSize(600, 300))
+	MainWindow.ShowAndRun()
 }

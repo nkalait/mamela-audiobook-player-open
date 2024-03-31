@@ -15,13 +15,22 @@ import (
 const appLabel = "Mamela"
 
 // The root folder where audio books will be place, this variable here is for testing only
-const rootPath = "/some_path"
+const rootPath string = ""
 
+// Carries info about currently playing audiobook
 var updateNowPlayingChannel = make(chan types.PlayingBook)
+
+// Listens to exit app event
+var exitApp = make(chan bool)
 
 func main() {
 	go func() {
-		audio.Initiate()
+		<-exitApp
+		ui.MainWindow.Close()
+
+	}()
+	go func() {
+		audio.StartChannelListener(updateNowPlayingChannel, exitApp)
 	}()
 	ui.BuildUI(appLabel, rootPath, updateNowPlayingChannel)
 }

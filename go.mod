@@ -4,15 +4,15 @@ go 1.21.4
 
 require (
 	fyne.io/fyne/v2 v2.4.4
-	github.com/gopxl/beep v1.4.0
+	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627
 	golang.org/x/text v0.14.0
 )
+
+require github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 
 require (
 	fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ebitengine/oto/v3 v3.1.0 // indirect
-	github.com/ebitengine/purego v0.6.0 // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fyne-io/gl-js v0.0.0-20230506162202-1fdaa286a934 // indirect
@@ -24,9 +24,7 @@ require (
 	github.com/go-text/typesetting v0.1.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
-	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pteich/gobass v0.0.0-20220731164340-de6110c52638
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect

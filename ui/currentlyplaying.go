@@ -2,22 +2,27 @@ package ui
 
 import (
 	"fmt"
+	"mamela/audio"
 	"mamela/types"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 var bookTitle *canvas.Text
 var playingPosition *canvas.Text
+var playerButtonPlay *widget.Button
+var playerButtonPause *widget.Button
+var playerButtonStop *widget.Button
 
 func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	initUI()
-	playingVBox := container.NewVBox(bookTitle, playingPosition)
+	playingVBox := container.NewVBox(bookTitle, playingPosition, playerButtonPlay, playerButtonPause, playerButtonStop)
 
 	go func() {
 		for playingBook := range updateNowPlayingChannel {
@@ -30,6 +35,7 @@ func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.C
 func initUI() {
 	initTitle()
 	initPlayingPosition()
+	initPlayerButtons()
 }
 
 func initTitle() {
@@ -43,6 +49,18 @@ func initPlayingPosition() {
 	playingPosition = canvas.NewText("", textColour)
 	playingPosition.TextSize = 24
 	playingPosition.Alignment = fyne.TextAlignCenter
+}
+
+func initPlayerButtons() {
+	playerButtonPlay = widget.NewButton("Play", func() {
+		audio.Play()
+	})
+	playerButtonPause = widget.NewButton("Pause", func() {
+		audio.Pause()
+	})
+	playerButtonStop = widget.NewButton("Stop", func() {
+		audio.Stop()
+	})
 }
 
 func updatePlaying(p types.PlayingBook) {
