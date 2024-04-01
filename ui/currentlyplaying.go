@@ -1,28 +1,39 @@
 package ui
 
 import (
-	"fmt"
 	"mamela/audio"
 	"mamela/types"
+	"math"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 var bookTitle *canvas.Text
+var bookFullLength *canvas.Text
 var playingPosition *canvas.Text
 var playerButtonPlay *widget.Button
 var playerButtonPause *widget.Button
 var playerButtonStop *widget.Button
+var playerButtonFastRewind *widget.Button
+var playerButtonFastForward *widget.Button
+var playerButtonSkipNext *widget.Button
+var playerButtonSkipPrevious *widget.Button
 
 func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	initUI()
-	playingVBox := container.NewVBox(bookTitle, playingPosition, playerButtonPlay, playerButtonPause, playerButtonStop)
+	playingVBox := container.NewVBox(
+		bookTitle,
+		playingPosition,
+		layoutPlayerButtons(),
+		bookFullLength,
+	)
 
 	go func() {
 		for playingBook := range updateNowPlayingChannel {
@@ -36,6 +47,7 @@ func initUI() {
 	initTitle()
 	initPlayingPosition()
 	initPlayerButtons()
+	initFullBookLength()
 }
 
 func initTitle() {
@@ -45,6 +57,13 @@ func initTitle() {
 	bookTitle.Alignment = fyne.TextAlignCenter
 }
 
+func initFullBookLength() {
+	bookFullLength = canvas.NewText("", textColour)
+	bookFullLength.TextSize = 32
+	bookFullLength.TextStyle.Bold = true
+	bookFullLength.Alignment = fyne.TextAlignCenter
+}
+
 func initPlayingPosition() {
 	playingPosition = canvas.NewText("", textColour)
 	playingPosition.TextSize = 24
@@ -52,20 +71,48 @@ func initPlayingPosition() {
 }
 
 func initPlayerButtons() {
-	playerButtonPlay = widget.NewButton("Play", func() {
+	playerButtonPlay = widget.NewButtonWithIcon("", theme.MediaPlayIcon(), func() {
 		audio.Play()
 	})
-	playerButtonPause = widget.NewButton("Pause", func() {
+	playerButtonPause = widget.NewButtonWithIcon("", theme.MediaPauseIcon(), func() {
 		audio.Pause()
 	})
-	playerButtonStop = widget.NewButton("Stop", func() {
+	playerButtonStop = widget.NewButtonWithIcon("", theme.MediaStopIcon(), func() {
 		audio.Stop()
 	})
+	playerButtonFastRewind = widget.NewButtonWithIcon("", theme.MediaFastRewindIcon(), func() {
+		audio.FastRewind()
+	})
+	playerButtonFastForward = widget.NewButtonWithIcon("", theme.MediaFastForwardIcon(), func() {
+		audio.FastForward()
+	})
+	playerButtonSkipNext = widget.NewButtonWithIcon("", theme.MediaSkipNextIcon(), func() {
+		// audio.SkipNext()
+	})
+	playerButtonSkipPrevious = widget.NewButtonWithIcon("", theme.MediaSkipPreviousIcon(), func() {
+		// audio.SkipPrevious()
+	})
+}
+
+func layoutPlayerButtons() *fyne.Container {
+	layout := container.NewHBox(
+		playerButtonSkipPrevious,
+		playerButtonFastRewind,
+		playerButtonPause,
+		playerButtonStop,
+		playerButtonPlay,
+		playerButtonFastForward,
+		playerButtonSkipNext,
+	)
+	return container.NewCenter(layout)
 }
 
 func updatePlaying(p types.PlayingBook) {
 	updateTitle(p.Title)
 	updatePlayingPosition(p.Position)
+
+	d := time.Duration(math.Round(p.FullLengthSeconds * 1000000000))
+	updateBookFullLength(audio.SecondsToTimeText(d))
 }
 
 func updateTitle(title string) {
@@ -73,23 +120,21 @@ func updateTitle(title string) {
 	bookTitle.Refresh()
 }
 
-func updatePlayingPosition(p time.Duration) {
-	var h int = int(p.Seconds()) / 3600
-	var m int = int(p.Seconds()) / 60
-	var s int = int(p.Seconds()) % 60
-
-	sh := pad(h)
-	sm := pad(m)
-	ss := pad(s)
-
-	playingPosition.Text = sh + " : " + sm + " : " + ss
-	playingPosition.Refresh()
+func updateBookFullLength(bookLength string) {
+	bookFullLength.Text = bookLength
+	bookFullLength.Refresh()
 }
 
-func pad(i int) string {
-	s := fmt.Sprint(i)
-	if i < 10 {
-		s = "0" + fmt.Sprint(i)
-	}
-	return s
+func updatePlayingPosition(p time.Duration) {
+	// var h int = int(p.Seconds()) / 3600
+	// var m int = int(p.Seconds()) / 60
+	// var s int = int(p.Seconds()) % 60
+
+	// sh := pad(h)
+	// sm := pad(m)
+	// ss := pad(s)
+
+	// playingPosition.Text = sh + " : " + sm + " : " + ss
+	playingPosition.Text = audio.SecondsToTimeText(p)
+	playingPosition.Refresh()
 }

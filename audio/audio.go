@@ -1,6 +1,7 @@
 package audio
 
 import (
+	"fmt"
 	"mamela/err"
 	"mamela/types"
 	"math"
@@ -64,17 +65,7 @@ func StartChannelListener(updateNowPlayingChannel chan types.PlayingBook, exitAp
 		for {
 			select {
 			case <-time.After(time.Second):
-				if player.channel != 0 {
-					active, e := player.channel.IsActive()
-					err.PanicError(e)
-					bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
-					err.PanicError(e)
-
-					if active == bass.ACTIVE_PLAYING {
-						updateUIPlayingPosition(bytePosition)
-
-					}
-				}
+				updateUICurrentlyPlayingInfo()
 			case <-exitListener:
 				break RoutineLoop
 			}
@@ -85,13 +76,62 @@ func StartChannelListener(updateNowPlayingChannel chan types.PlayingBook, exitAp
 	}()
 }
 
-// Update the currently playing audiobook position
-func updateUIPlayingPosition(bytePosition int) {
-	p, e := player.channel.Bytes2Seconds(bytePosition)
-	err.PanicError(e)
-	var d time.Duration = time.Duration(math.Round(p * 1000000000))
-	player.currentBook.Position = time.Duration(d)
-	player.updater <- player.currentBook
+// Pad number below 10 with a zero
+func pad(i int) string {
+	s := fmt.Sprint(i)
+	if i < 10 {
+		s = "0" + fmt.Sprint(i)
+	}
+	return s
+}
+
+// Convert seconds to time in hh : mm : ss
+func SecondsToTimeText(seconds time.Duration) string {
+	var h int = int(seconds.Seconds()) / 3600
+	var m int = int(seconds.Seconds()) / 60
+	var s int = int(seconds.Seconds()) % 60
+
+	sh := pad(h)
+	sm := pad(m)
+	ss := pad(s)
+
+	return sh + " : " + sm + " : " + ss
+}
+
+// Get the full length in seconds of the currently playing audiobook
+func getFullBookLengthSeconds(c bass.Channel) float64 {
+	length, e := c.GetLength(bass.POS_BYTE)
+	if e != nil {
+		err.ShowError("Cannot get full length of audio book:\n" + e.Error())
+	} else {
+		t, e := player.channel.Bytes2Seconds(length)
+		if e != nil {
+			err.ShowError("Cannot get full length of audio book:\n" + e.Error())
+		} else {
+			return t
+		}
+	}
+	return 0
+}
+
+// Update the currently playing audiobook information on the UI
+func updateUICurrentlyPlayingInfo() {
+	if player.channel != 0 {
+		active, e := player.channel.IsActive()
+		err.PanicError(e)
+		if active == bass.ACTIVE_PLAYING {
+			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
+			err.PanicError(e)
+
+			p, e := player.channel.Bytes2Seconds(bytePosition)
+			err.PanicError(e)
+			var d time.Duration = time.Duration(math.Round(p * 1000000000))
+			player.currentBook.Position = time.Duration(d)
+		} else if active == bass.ACTIVE_STOPPED {
+			player.currentBook.Position = 0
+		}
+		player.updater <- player.currentBook
+	}
 }
 
 // Start playing a selected audiobook
@@ -114,5 +154,10 @@ func LoadAndPlay(playingBook types.PlayingBook) {
 	e = player.channel.SetPosition(0, bass.POS_BYTE)
 	err.PanicError(e)
 
+	player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
+
 	player.play()
+
+	updateUICurrentlyPlayingInfo()
+
 }

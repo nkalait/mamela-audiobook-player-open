@@ -11,5 +11,6 @@ type Book struct {
 // An audiobook that is currently playing
 type PlayingBook struct {
 	Book
-	Position time.Duration
+	Position          time.Duration
+	FullLengthSeconds float64
 }
