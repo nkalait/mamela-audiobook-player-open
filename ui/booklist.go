@@ -43,7 +43,7 @@ func setBookListHeader() string {
 	if rootPath != "" {
 		books, e := getAudioBooks()
 		if e != nil {
-			err.ShowError("An error has occured:\n" + e.Error())
+			err.ShowError("An error has occured", e)
 		}
 		if len(books) > 0 {
 			return "Loaded Books"

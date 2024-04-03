@@ -11,8 +11,10 @@ func PanicError(e error) {
 	}
 }
 
-func ShowError(s string) {
-	go func() {
-		dialog.Message("%s", s).Title("Error").Error()
-	}()
+func ShowError(msg string, e error) {
+	if e != nil {
+		go func() {
+			dialog.Message("%s:\n%s", msg, e.Error()).Title("Error").Error()
+		}()
+	}
 }

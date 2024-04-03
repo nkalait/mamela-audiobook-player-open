@@ -16,9 +16,7 @@ type Player struct {
 func (p *Player) play() {
 	if p.channel != 0 {
 		e := p.channel.Play(false)
-		if e != nil {
-			err.ShowError(e.Error())
-		}
+		err.ShowError("", e)
 	}
 }
 
@@ -26,7 +24,7 @@ func (p *Player) pause() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
 		if e != nil {
-			err.ShowError(e.Error())
+			err.ShowError("", e)
 		} else {
 			if active == bass.ACTIVE_PLAYING {
 				e := p.channel.Pause()
@@ -40,7 +38,7 @@ func (p *Player) stop() {
 	if p.channel != 0 {
 		e := p.channel.Stop()
 		if e != nil {
-			err.ShowError(e.Error())
+			err.ShowError("", e)
 		} else {
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUICurrentlyPlayingInfo()
@@ -55,21 +53,21 @@ func (p *Player) fastRewind() {
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(10)
 			if e != nil {
-				err.ShowError(e.Error())
+				err.ShowError("", e)
 			} else {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
 				if e != nil {
-					err.ShowError(e.Error())
+					err.ShowError("", e)
 				} else {
 					if currentBytePosition-bytePositionAmount < 0 {
 						e = p.channel.SetPosition(0, bass.POS_BYTE)
 						if e != nil {
-							err.ShowError("Error setting rewinding:\n" + e.Error())
+							err.ShowError("Error setting rewinding", e)
 						}
 					} else {
 						e = p.channel.SetPosition(currentBytePosition-bytePositionAmount, bass.POS_BYTE)
 						if e != nil {
-							err.ShowError("Error setting rewinding:\n" + e.Error())
+							err.ShowError("Error setting rewinding", e)
 						}
 					}
 				}
@@ -85,25 +83,25 @@ func (p *Player) fastForward() {
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(10)
 			if e != nil {
-				err.ShowError(e.Error())
+				err.ShowError("", e)
 			} else {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
 				if e != nil {
-					err.ShowError(e.Error())
+					err.ShowError("", e)
 				} else {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
 					if e != nil {
-						err.ShowError("Error setting fast forwarding:\n" + e.Error())
+						err.ShowError("Error setting fast forwarding", e)
 					}
 					if currentBytePosition+bytePositionAmount >= byteLength {
 						e = p.channel.SetPosition(byteLength, bass.POS_BYTE)
 						if e != nil {
-							err.ShowError("Error setting fast forwarding:\n" + e.Error())
+							err.ShowError("Error setting fast forwarding", e)
 						}
 					} else {
 						e = p.channel.SetPosition(currentBytePosition+bytePositionAmount, bass.POS_BYTE)
 						if e != nil {
-							err.ShowError("Error setting fast forwarding:\n" + e.Error())
+							err.ShowError("Error setting fast forwarding", e)
 						}
 					}
 				}

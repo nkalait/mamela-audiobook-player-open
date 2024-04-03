@@ -102,11 +102,11 @@ func SecondsToTimeText(seconds time.Duration) string {
 func getFullBookLengthSeconds(c bass.Channel) float64 {
 	length, e := c.GetLength(bass.POS_BYTE)
 	if e != nil {
-		err.ShowError("Cannot get full length of audio book:\n" + e.Error())
+		err.ShowError("Cannot get full length of audio book", e)
 	} else {
 		t, e := player.channel.Bytes2Seconds(length)
 		if e != nil {
-			err.ShowError("Cannot get full length of audio book:\n" + e.Error())
+			err.ShowError("Cannot get full length of audio book", e)
 		} else {
 			return t
 		}
@@ -137,7 +137,6 @@ func updateUICurrentlyPlayingInfo() {
 // Start playing a selected audiobook
 func LoadAndPlay(playingBook types.PlayingBook) {
 	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
-	// c, e := bass.StreamCreateFile("songs/t.m4b", 0, bass.AsyncFile)
 	player.currentBook = playingBook
 
 	if player.channel != 0 {
