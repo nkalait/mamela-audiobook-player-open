@@ -50,9 +50,12 @@ func initBass() {
 func loadPlugins() []uint32 {
 	pluginLibbassAac, e := bass.PluginLoad("lib/mac/libbass_aac.dylib", bass.StreamDecode)
 	err.PanicError(e)
+	pluginLibbassOpus, e := bass.PluginLoad("lib/mac/libbassopus.dylib", bass.StreamDecode)
+	err.PanicError(e)
 
 	plugins := make([]uint32, 2)
 	plugins = append(plugins, pluginLibbassAac)
+	plugins = append(plugins, pluginLibbassOpus)
 
 	return plugins
 }
