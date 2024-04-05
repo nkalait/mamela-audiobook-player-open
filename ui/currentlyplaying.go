@@ -158,15 +158,6 @@ func updateBookFullLength(bookLength string) {
 }
 
 func updatePlayingPosition(p time.Duration) {
-	// var h int = int(p.Seconds()) / 3600
-	// var m int = int(p.Seconds()) / 60
-	// var s int = int(p.Seconds()) % 60
-
-	// sh := pad(h)
-	// sm := pad(m)
-	// ss := pad(s)
-
-	// playingPosition.Text = sh + " : " + sm + " : " + ss
 	playingPosition.Text = audio.SecondsToTimeText(p)
 	playingPosition.Refresh()
 }
