@@ -50,6 +50,6 @@ func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.P
 	body := container.NewStack(bodyBg, bodyParts)
 	main := container.NewGridWithColumns(1, body)
 	MainWindow.SetContent(main)
-	MainWindow.Resize(fyne.NewSize(600, 300))
+	MainWindow.Resize(fyne.NewSize(800, 400))
 	MainWindow.ShowAndRun()
 }

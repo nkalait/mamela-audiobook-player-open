@@ -28,6 +28,7 @@ var playerButtonSkipPrevious *widget.Button
 
 func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	initUI()
+	hideUIItems()
 	playingVBox := container.NewVBox(
 		bookTitle,
 		playingPosition,
@@ -37,6 +38,9 @@ func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.C
 
 	go func() {
 		for playingBook := range updateNowPlayingChannel {
+			if bookTitle.Hidden {
+				showUIItems()
+			}
 			updatePlaying(playingBook)
 		}
 	}()
@@ -48,6 +52,34 @@ func initUI() {
 	initPlayingPosition()
 	initPlayerButtons()
 	initFullBookLength()
+}
+
+func showUIItems() {
+	bookTitle.Show()
+	bookFullLength.Show()
+	playingPosition.Show()
+
+	playerButtonSkipPrevious.Show()
+	playerButtonFastRewind.Show()
+	playerButtonPause.Show()
+	playerButtonStop.Show()
+	playerButtonPlay.Show()
+	playerButtonFastForward.Show()
+	playerButtonSkipNext.Show()
+}
+
+func hideUIItems() {
+	bookTitle.Hide()
+	bookFullLength.Hide()
+	playingPosition.Hide()
+
+	playerButtonSkipPrevious.Hide()
+	playerButtonFastRewind.Hide()
+	playerButtonPause.Hide()
+	playerButtonStop.Hide()
+	playerButtonPlay.Hide()
+	playerButtonFastForward.Hide()
+	playerButtonSkipNext.Hide()
 }
 
 func initTitle() {
