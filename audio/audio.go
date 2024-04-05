@@ -151,10 +151,16 @@ func LoadAndPlay(playingBook types.PlayingBook) {
 	}
 	var e error = nil
 	player.channel, e = bass.StreamCreateFile(player.currentBook.FullPath, 0, bass.AsyncFile)
-	err.PanicError(e)
+	if e != nil {
+		err.ShowError("There seems to be a problem loading the the audiobook file(s)", e)
+		return
+	}
 
 	e = player.channel.SetPosition(0, bass.POS_BYTE)
-	err.PanicError(e)
+	if e != nil {
+		err.ShowError("There seems to be a problem playing the the audiobook file(s)", e)
+		return
+	}
 
 	player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
 
