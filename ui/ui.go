@@ -38,13 +38,13 @@ func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.P
 	MainWindow = MamelaApp.NewWindow(appLabel)
 
 	// UI to show list of audiobooks
-	bookListContainer := initBookList()
+	leftPane := container.NewBorder(generateBookListContainerTop(), nil, nil, nil, initBookList())
 
 	// Part of UI to place UI elements pertaining to currently playing audiobook
 	currentlyPlayingContainer := createPlayingLayout(updateNowPlayingChannel)
 
 	// Place all parts UI parts together
-	bodyParts := container.NewBorder(generateBookListContainerTop(), nil, bookListContainer, nil, currentlyPlayingContainer)
+	bodyParts := container.NewBorder(nil, nil, leftPane, nil, currentlyPlayingContainer)
 
 	bodyBg := canvas.NewRectangle(BgColour)
 	body := container.NewStack(bodyBg, bodyParts)
