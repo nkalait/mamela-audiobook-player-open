@@ -110,14 +110,14 @@ func initBookArt() {
 
 func initTitle() {
 	bookTitle = canvas.NewText("", textColour)
-	bookTitle.TextSize = 32
+	bookTitle.TextSize = 26
 	bookTitle.TextStyle.Bold = true
 	bookTitle.Alignment = fyne.TextAlignCenter
 }
 
 func initFullBookLength() {
 	bookFullLength = canvas.NewText("", textColour)
-	bookFullLength.TextSize = 32
+	bookFullLength.TextSize = 24
 	bookFullLength.TextStyle.Bold = true
 	bookFullLength.Alignment = fyne.TextAlignCenter
 }
