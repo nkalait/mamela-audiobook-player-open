@@ -110,26 +110,42 @@ func (p *Player) fastForward() {
 	}
 }
 
-// func (p *Player) pause() {
-// 	if player.channel != 0 {
-// 		active, e := player.channel.IsActive()
-// 		err.PanicError(e)
-// 		if active == bass.ACTIVE_PLAYING {
-// 			e := p.channel.Pause()
-// 			err.PanicError(e)
-// 		}
-// 	}
-// }
-// func (p *Player) pause() {
-// 	if player.channel != 0 {
-// 		active, e := player.channel.IsActive()
-// 		err.PanicError(e)
-// 		if active == bass.ACTIVE_PLAYING {
-// 			e := p.channel.Pause()
-// 			err.PanicError(e)
-// 		}
-// 	}
-// }
+func (p *Player) skipNext() {
+	if player.channel != 0 {
+		active, e := player.channel.IsActive()
+		err.ShowError("Error skipping to next chapter", e)
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
+			numChapters := len(player.currentBook.Chapters)
+			if numChapters > 0 {
+				if player.currentBook.CurrentChapter < numChapters-1 {
+					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter + 1
+					LoadAndPlay(p.currentBook)
+				}
+			}
+		}
+	}
+}
+
+func (p *Player) skipPrevious() {
+	if player.channel != 0 {
+		active, e := player.channel.IsActive()
+		err.ShowError("Error skipping to previous chapter", e)
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
+			numChapters := len(player.currentBook.Chapters)
+			if numChapters > 0 {
+				if player.currentBook.CurrentChapter > 0 {
+					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter - 1
+					LoadAndPlay(p.currentBook)
+				} else {
+					e = p.channel.SetPosition(0, bass.POS_BYTE)
+					if e != nil {
+						err.ShowError("Error to skipping to start", e)
+					}
+				}
+			}
+		}
+	}
+}
 
 func Play() {
 	player.play()
@@ -146,10 +162,9 @@ func FastRewind() {
 func FastForward() {
 	player.fastForward()
 }
-
-// func SkipNext() {
-// 	player.skipNext()
-// }
-// func SkipPrevious() {
-// 	player.skipPrevious()
-// }
+func SkipNext() {
+	player.skipNext()
+}
+func SkipPrevious() {
+	player.skipPrevious()
+}

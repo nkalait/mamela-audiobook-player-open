@@ -119,10 +119,10 @@ func initPlayerButtons() {
 		audio.FastForward()
 	})
 	playerButtonSkipNext = widget.NewButtonWithIcon("", theme.MediaSkipNextIcon(), func() {
-		// audio.SkipNext()
+		audio.SkipNext()
 	})
 	playerButtonSkipPrevious = widget.NewButtonWithIcon("", theme.MediaSkipPreviousIcon(), func() {
-		// audio.SkipPrevious()
+		audio.SkipPrevious()
 	})
 }
 

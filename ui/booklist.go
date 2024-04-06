@@ -126,27 +126,42 @@ func getAudioBooks() ([]types.Book, error) {
 	}
 
 	for _, b := range rootFolderEntries {
+		isAValidAudioBook := false
 		if b.IsDir() {
 			var bookFullPath = rootPath + "/" + b.Name()
 			bookFolder, e := os.ReadDir(bookFullPath)
 			if e == nil {
+				var book types.Book
 				for _, bookFile := range bookFolder {
 					i, e := bookFile.Info()
 					if e == nil {
 						if i.Mode().IsRegular() {
 							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(i.Name())) {
-								a := types.Book{
-									Title:    b.Name(),
-									FullPath: bookFullPath + "/" + i.Name(),
-								}
-								bookList = append(bookList, a)
-								break
+								isAValidAudioBook = true
+								// a := types.Book{
+								// 	Title:    b.Name(),
+								// 	FullPath: bookFullPath + "/" + i.Name(),
+								// }
+
+								// bookList = append(bookList, a)
+								// break
+								book.Chapters = append(book.Chapters, i.Name())
 							}
 						}
 					}
+				}
+
+				if isAValidAudioBook {
+					book.Title = b.Name()
+					book.FullPath = bookFullPath
+					bookList = append(bookList, book)
 				}
 			}
 		}
 	}
 	return bookList, nil
+}
+
+func getAudioBookChapters(dirPath string, book *types.Book) {
+
 }
