@@ -13,3 +13,9 @@ var AllowedFileTypes = []string{
 	".opus",
 	".wav",
 }
+
+var BookArtFileTypes []string = []string{
+	".jpg",
+	".jpeg",
+	".png",
+}

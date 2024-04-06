@@ -126,7 +126,7 @@ func getAudioBooks() ([]types.Book, error) {
 							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(name)) {
 								isAValidAudioBook = true
 								book.Chapters = append(book.Chapters, i.Name())
-							} else if slices.Contains(bookArtFileTypes, filepath.Ext(name)) {
+							} else if slices.Contains(filetypes.BookArtFileTypes, filepath.Ext(name)) {
 								// If the folder contains an image file, get the one of best quality
 								if i.Size() > highestQuality {
 									highestQuality = i.Size()
@@ -147,14 +147,4 @@ func getAudioBooks() ([]types.Book, error) {
 		}
 	}
 	return bookList, nil
-}
-
-var bookArtFileTypes []string = []string{
-	".jpg",
-	".jpeg",
-	".png",
-}
-
-func getAudioBookChapters(dirPath string, book *types.Book) {
-
 }
