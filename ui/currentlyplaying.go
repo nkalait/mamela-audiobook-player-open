@@ -20,7 +20,7 @@ import (
 )
 
 var bookArt *canvas.Image
-var bookTitle *canvas.Text
+var bookTitle *widget.Label
 var bookFullLength *canvas.Text
 var playingPosition *canvas.Text
 var playerButtonPlay *widget.Button
@@ -35,18 +35,18 @@ func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.C
 	initUI()
 	hideUIItems()
 
+	containerTop := container.NewVBox(bookTitle, bookFullLength)
 	containerPositionDetails := container.NewVBox(
 		playingPosition,
 		layoutPlayerButtons(),
-		bookFullLength,
 	)
-	playingVBox := container.NewBorder(
-		bookTitle,
+	playingVBox := container.NewPadded(container.NewBorder(
+		containerTop,
 		containerPositionDetails,
 		nil,
 		nil,
 		bookArt,
-	)
+	))
 
 	go func() {
 		for playingBook := range updateNowPlayingChannel {
@@ -109,22 +109,24 @@ func initBookArt() {
 }
 
 func initTitle() {
-	bookTitle = canvas.NewText("", textColour)
-	bookTitle.TextSize = 26
+	// bookTitle = canvas.NewText("", textColour)
+	bookTitle = widget.NewLabel("")
+	// bookTitle.TextSize = 16
+	bookTitle.Wrapping = fyne.TextWrapBreak
 	bookTitle.TextStyle.Bold = true
 	bookTitle.Alignment = fyne.TextAlignCenter
 }
 
 func initFullBookLength() {
 	bookFullLength = canvas.NewText("", textColour)
-	bookFullLength.TextSize = 24
-	bookFullLength.TextStyle.Bold = true
+	bookFullLength.TextSize = 18
+	// bookFullLength.TextStyle.Bold = true
 	bookFullLength.Alignment = fyne.TextAlignCenter
 }
 
 func initPlayingPosition() {
 	playingPosition = canvas.NewText("", textColour)
-	playingPosition.TextSize = 24
+	playingPosition.TextSize = 18
 	playingPosition.Alignment = fyne.TextAlignCenter
 }
 
