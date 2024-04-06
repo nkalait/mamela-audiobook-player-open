@@ -141,31 +141,43 @@ func updateUICurrentlyPlayingInfo() {
 func LoadAndPlay(playingBook types.PlayingBook) {
 	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
 	player.currentBook = playingBook
+	stopPlayingIfPlaying(player.channel, player)
 
-	if player.channel != 0 {
-		a, e := player.channel.IsActive()
-		err.PanicError(e)
-		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
-			player.stop()
-		}
+	chapter := player.currentBook.CurrentChapter
+	e := loadAudioBookFile(player.currentBook.FullPath + "/" + player.currentBook.Chapters[chapter])
+	if e == nil {
+		startPlaying()
 	}
-	var e error = nil
-	player.channel, e = bass.StreamCreateFile(player.currentBook.FullPath, 0, bass.AsyncFile)
-	if e != nil {
-		err.ShowError("There seems to be a problem loading the the audiobook file(s)", e)
-		return
-	}
-
-	e = player.channel.SetPosition(0, bass.POS_BYTE)
-	if e != nil {
-		err.ShowError("There seems to be a problem playing the the audiobook file(s)", e)
-		return
-	}
-
-	player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
-
-	player.play()
 
 	updateUICurrentlyPlayingInfo()
+}
 
+func stopPlayingIfPlaying(c bass.Channel, p Player) {
+	if c != 0 {
+		a, e := c.IsActive()
+		err.PanicError(e)
+		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
+			p.stop()
+		}
+	}
+}
+
+func loadAudioBookFile(fullPath string) error {
+	var e error = nil
+	player.channel, e = bass.StreamCreateFile(fullPath, 0, bass.AsyncFile)
+	if e != nil {
+		err.ShowError("There seems to be a problem loading the the audiobook file(s)", e)
+	}
+	return e
+}
+
+func startPlaying() error {
+	e := player.channel.SetPosition(0, bass.POS_BYTE)
+	if e != nil {
+		err.ShowError("There seems to be a problem playing the the audiobook file(s)", e)
+	} else {
+		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
+		player.play()
+	}
+	return e
 }
