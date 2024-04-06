@@ -75,23 +75,6 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 func createFileDialogButton() *widget.Button {
 	icon := theme.FolderOpenIcon()
 	button := widget.NewButtonWithIcon("", icon, func() {
-
-		// w := MamelaApp.NewWindow("Open root folder")
-
-		// // w.Resize(fyne.NewSize(600, 300))
-		// w.Show()
-		// dialog.ShowFolderOpen(func(dir fyne.ListableURI, e error) {
-		// 	if e != nil {
-		// 		dialog.ShowError(e, w)
-		// 		w.Close()
-		// 		return
-		// 	}
-		// 	if dir != nil {
-		// 		rootPath = dir.Path()
-		// 		updateBookListChannel <- true
-		// 		w.Close()
-		// 	}
-		// }, w)
 		path, e := dialog.Directory().Title("Open root folder").Browse()
 		if e != nil {
 			dialog.Message(e.Error())
@@ -138,13 +121,6 @@ func getAudioBooks() ([]types.Book, error) {
 						if i.Mode().IsRegular() {
 							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(i.Name())) {
 								isAValidAudioBook = true
-								// a := types.Book{
-								// 	Title:    b.Name(),
-								// 	FullPath: bookFullPath + "/" + i.Name(),
-								// }
-
-								// bookList = append(bookList, a)
-								// break
 								book.Chapters = append(book.Chapters, i.Name())
 							}
 						}
