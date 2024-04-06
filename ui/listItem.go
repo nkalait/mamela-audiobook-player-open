@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dhowden/tag"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -17,12 +18,14 @@ type MyListItemWidget struct {
 	Button *widget.Button
 }
 
+var channelUpdateBookArt = make(chan *tag.Picture)
+
 func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	item := &MyListItemWidget{
 		Title: widget.NewLabel(cases.Title(language.English).String(b.Title)),
 		Button: widget.NewButton("", func() {
 			var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Position: 0, FullLengthSeconds: 0}
-			audio.LoadAndPlay(playingBook)
+			audio.LoadAndPlay(playingBook, channelUpdateBookArt)
 		}),
 	}
 	item.Title.Truncation = fyne.TextTruncateEllipsis

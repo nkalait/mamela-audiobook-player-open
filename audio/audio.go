@@ -7,6 +7,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/dhowden/tag"
 	bass "github.com/pteich/gobass"
 )
 
@@ -137,8 +138,13 @@ func updateUICurrentlyPlayingInfo() {
 	}
 }
 
+var channelBookArtUpdater chan *tag.Picture
+
 // Start playing a selected audiobook
-func LoadAndPlay(playingBook types.PlayingBook) {
+func LoadAndPlay(playingBook types.PlayingBook, channelUpdateBookArt chan *tag.Picture) {
+	if channelUpdateBookArt != nil {
+		channelBookArtUpdater = channelUpdateBookArt
+	}
 	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
 	player.currentBook = playingBook
 	stopPlayingIfPlaying(player.channel, player)
@@ -148,7 +154,11 @@ func LoadAndPlay(playingBook types.PlayingBook) {
 	if e == nil {
 		startPlaying()
 	}
-
+	if player.currentBook.Metadata != nil {
+		channelBookArtUpdater <- player.currentBook.Metadata.Picture()
+	} else {
+		channelBookArtUpdater <- nil
+	}
 	updateUICurrentlyPlayingInfo()
 }
 
@@ -166,7 +176,7 @@ func loadAudioBookFile(fullPath string) error {
 	var e error = nil
 	player.channel, e = bass.StreamCreateFile(fullPath, 0, bass.AsyncFile)
 	if e != nil {
-		err.ShowError("There seems to be a problem loading the the audiobook file(s)", e)
+		err.ShowError("There seems to be a problem loading the the audio book file(s)", e)
 	}
 	return e
 }
@@ -174,10 +184,20 @@ func loadAudioBookFile(fullPath string) error {
 func startPlaying() error {
 	e := player.channel.SetPosition(0, bass.POS_BYTE)
 	if e != nil {
-		err.ShowError("There seems to be a problem playing the the audiobook file(s)", e)
+		err.ShowError("There seems to be a problem playing the the audio book file(s)", e)
 	} else {
 		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
 		player.play()
+		player.currentBook.Metadata = channelGetTag(player)
 	}
 	return e
+}
+
+func channelGetTag(p Player) tag.Metadata {
+	f := p.getCurrentFile()
+	var meta tag.Metadata = nil
+	if f != nil {
+		meta, _ = tag.ReadFrom(f)
+	}
+	return meta
 }

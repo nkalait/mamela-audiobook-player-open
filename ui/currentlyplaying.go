@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"bytes"
+	"fmt"
+	"image"
 	"mamela/audio"
 	"mamela/types"
 	"math"
@@ -11,10 +14,12 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dhowden/tag"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
+var bookArt *canvas.Image
 var bookTitle *canvas.Text
 var bookFullLength *canvas.Text
 var playingPosition *canvas.Text
@@ -29,11 +34,18 @@ var playerButtonSkipPrevious *widget.Button
 func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
 	initUI()
 	hideUIItems()
-	playingVBox := container.NewVBox(
-		bookTitle,
+
+	containerPositionDetails := container.NewVBox(
 		playingPosition,
 		layoutPlayerButtons(),
 		bookFullLength,
+	)
+	playingVBox := container.NewBorder(
+		bookTitle,
+		containerPositionDetails,
+		nil,
+		nil,
+		bookArt,
 	)
 
 	go func() {
@@ -49,12 +61,14 @@ func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.C
 
 func initUI() {
 	initTitle()
+	initBookArt()
 	initPlayingPosition()
 	initPlayerButtons()
 	initFullBookLength()
 }
 
 func showUIItems() {
+	bookArt.Show()
 	bookTitle.Show()
 	bookFullLength.Show()
 	playingPosition.Show()
@@ -69,6 +83,7 @@ func showUIItems() {
 }
 
 func hideUIItems() {
+	bookArt.Hide()
 	bookTitle.Hide()
 	bookFullLength.Hide()
 	playingPosition.Hide()
@@ -80,6 +95,17 @@ func hideUIItems() {
 	playerButtonPlay.Hide()
 	playerButtonFastForward.Hide()
 	playerButtonSkipNext.Hide()
+}
+
+func initBookArt() {
+	bookArt = canvas.NewImageFromImage(nil)
+	bookArt.FillMode = canvas.ImageFillContain
+
+	go func() {
+		for picture := range channelUpdateBookArt {
+			updateBookArt(picture)
+		}
+	}()
 }
 
 func initTitle() {
@@ -145,6 +171,29 @@ func updatePlaying(p types.PlayingBook) {
 
 	d := time.Duration(math.Round(p.FullLengthSeconds * 1000000000))
 	updateBookFullLength(audio.SecondsToTimeText(d))
+
+}
+
+func clearBookArt() {
+	bookArt.Image = nil
+	bookArt.Refresh()
+}
+
+func updateBookArt(pic *tag.Picture) {
+	clearBookArt()
+	if pic == nil {
+		return
+	}
+	if len(pic.Data) == 0 {
+		return
+	}
+	img, _, err := image.Decode(bytes.NewReader(pic.Data))
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	bookArt.Image = img
+	bookArt.Refresh()
 }
 
 func updateTitle(title string) {

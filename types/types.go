@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"github.com/dhowden/tag"
+)
 
 // An audiobook
 type Book struct {
@@ -12,7 +16,9 @@ type Book struct {
 // An audiobook that is currently playing
 type PlayingBook struct {
 	Book
-	CurrentChapter    int
-	Position          time.Duration
-	FullLengthSeconds float64
+	CurrentChapter       int
+	Position             time.Duration
+	FullLengthSeconds    float64
+	Metadata             tag.Metadata
+	channelUpdateBookArt chan bool
 }

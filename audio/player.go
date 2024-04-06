@@ -3,6 +3,7 @@ package audio
 import (
 	"mamela/err"
 	"mamela/types"
+	"os"
 
 	bass "github.com/pteich/gobass"
 )
@@ -11,6 +12,12 @@ type Player struct {
 	updater     chan types.PlayingBook
 	currentBook types.PlayingBook
 	channel     bass.Channel
+}
+
+func (p *Player) getCurrentFile() *os.File {
+	path := p.currentBook.FullPath + "/" + p.currentBook.Chapters[p.currentBook.CurrentChapter]
+	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	return f
 }
 
 func (p *Player) play() {
@@ -119,7 +126,7 @@ func (p *Player) skipNext() {
 			if numChapters > 0 {
 				if player.currentBook.CurrentChapter < numChapters-1 {
 					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter + 1
-					LoadAndPlay(p.currentBook)
+					LoadAndPlay(p.currentBook, nil)
 				}
 			}
 		}
@@ -135,7 +142,7 @@ func (p *Player) skipPrevious() {
 			if numChapters > 0 {
 				if player.currentBook.CurrentChapter > 0 {
 					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter - 1
-					LoadAndPlay(p.currentBook)
+					LoadAndPlay(p.currentBook, nil)
 				} else {
 					e = p.channel.SetPosition(0, bass.POS_BYTE)
 					if e != nil {
