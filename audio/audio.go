@@ -5,6 +5,7 @@ import (
 	"mamela/err"
 	"mamela/types"
 	"math"
+	"os"
 	"time"
 
 	"github.com/dhowden/tag"
@@ -154,8 +155,27 @@ func LoadAndPlay(playingBook types.PlayingBook, channelUpdateBookArt chan *tag.P
 	if e == nil {
 		startPlaying()
 	}
-	if player.currentBook.Metadata != nil {
+
+	// Priority for showing an audio book image is such that we
+	// first check if the file being played has an image
+	// embedded it it, if not then we check if there is an
+	// image file inside the audio book folder
+	if player.currentBook.Metadata != nil && player.currentBook.Metadata.Picture() != nil {
 		channelBookArtUpdater <- player.currentBook.Metadata.Picture()
+	} else if player.currentBook.FolderArt != "" {
+		fileBytes, e := os.ReadFile(player.currentBook.FullPath + "/" + player.currentBook.FolderArt)
+		if e == nil {
+			pic := tag.Picture{
+				// Ext:         "",
+				// MIMEType:    "",
+				// Type:        string // Type of the picture (see pictureTypes).
+				// Description  string // Description.
+				Data: fileBytes,
+			}
+			channelBookArtUpdater <- &pic
+		} else {
+			channelBookArtUpdater <- nil
+		}
 	} else {
 		channelBookArtUpdater <- nil
 	}
@@ -198,6 +218,7 @@ func channelGetTag(p Player) tag.Metadata {
 	var meta tag.Metadata = nil
 	if f != nil {
 		meta, _ = tag.ReadFrom(f)
+		f.Close()
 	}
 	return meta
 }

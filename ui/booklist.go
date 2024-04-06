@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -114,14 +115,23 @@ func getAudioBooks() ([]types.Book, error) {
 			var bookFullPath = rootPath + "/" + b.Name()
 			bookFolder, e := os.ReadDir(bookFullPath)
 			if e == nil {
+				highestQuality := int64(0)
+				folderArt := ""
 				var book types.Book
 				for _, bookFile := range bookFolder {
 					i, e := bookFile.Info()
 					if e == nil {
 						if i.Mode().IsRegular() {
-							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(i.Name())) {
+							name := strings.ToLower(i.Name())
+							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(name)) {
 								isAValidAudioBook = true
 								book.Chapters = append(book.Chapters, i.Name())
+							} else if slices.Contains(bookArtFileTypes, filepath.Ext(name)) {
+								// If the folder contains an image file, get the one of best quality
+								if i.Size() > highestQuality {
+									highestQuality = i.Size()
+									folderArt = i.Name()
+								}
 							}
 						}
 					}
@@ -130,12 +140,19 @@ func getAudioBooks() ([]types.Book, error) {
 				if isAValidAudioBook {
 					book.Title = b.Name()
 					book.FullPath = bookFullPath
+					book.FolderArt = folderArt
 					bookList = append(bookList, book)
 				}
 			}
 		}
 	}
 	return bookList, nil
+}
+
+var bookArtFileTypes []string = []string{
+	".jpg",
+	".jpeg",
+	".png",
 }
 
 func getAudioBookChapters(dirPath string, book *types.Book) {
