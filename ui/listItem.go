@@ -21,8 +21,7 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	item := &MyListItemWidget{
 		Title: widget.NewLabel(cases.Title(language.English).String(b.Title)),
 		Button: widget.NewButton("", func() {
-			var playingBook types.PlayingBook = types.PlayingBook{Book: b, Position: 0, FullLengthSeconds: 0}
-			// updateNowPlayingChannel <- playingBook
+			var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Position: 0, FullLengthSeconds: 0}
 			audio.LoadAndPlay(playingBook)
 		}),
 	}
