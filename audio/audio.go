@@ -104,19 +104,22 @@ func SecondsToTimeText(seconds time.Duration) string {
 }
 
 // Get the full length in seconds of the currently playing audiobook
-func getFullBookLengthSeconds(c bass.Channel) float64 {
-	length, e := c.GetLength(bass.POS_BYTE)
-	if e != nil {
-		err.ShowError("Cannot get full length of audio book", e)
-	} else {
-		t, e := player.channel.Bytes2Seconds(length)
-		if e != nil {
-			err.ShowError("Cannot get full length of audio book", e)
-		} else {
-			return t
+func getFullBookLengthSeconds(book types.Book) float64 {
+	length := float64(0)
+	for i := 0; i < len(book.Chapters); i++ {
+		c, e := bass.StreamCreateFile(book.FullPath+"/"+book.Chapters[i], 0, bass.AsyncFile)
+		if e == nil {
+			bytesLen, e := c.GetLength(bass.POS_BYTE)
+			if e == nil {
+				t, e := player.channel.Bytes2Seconds(bytesLen)
+				if e == nil {
+					length = length + t
+				}
+			}
 		}
+		c.Free()
 	}
-	return 0
+	return length
 }
 
 // Update the currently playing audiobook information on the UI
@@ -206,7 +209,7 @@ func startPlaying() error {
 	if e != nil {
 		err.ShowError("There seems to be a problem playing the the audio book file(s)", e)
 	} else {
-		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.channel)
+		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.currentBook.Book)
 		player.play()
 		player.currentBook.Metadata = channelGetTag(player)
 	}
