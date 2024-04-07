@@ -2,7 +2,6 @@ package ui
 
 import (
 	"image/color"
-	"mamela/types"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -32,7 +31,7 @@ var (
 	MainWindow fyne.Window
 )
 
-func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.PlayingBook) {
+func BuildUI(appLabel string, rootP string) {
 	rootPath = rootP
 	MamelaApp = app.New()
 	MainWindow = MamelaApp.NewWindow(appLabel)
@@ -41,7 +40,7 @@ func BuildUI(appLabel string, rootP string, updateNowPlayingChannel chan types.P
 	leftPane := container.NewBorder(generateBookListContainerTop(), nil, nil, nil, initBookList())
 
 	// Part of UI to place UI elements pertaining to currently playing audiobook
-	currentlyPlayingContainer := createPlayingLayout(updateNowPlayingChannel)
+	currentlyPlayingContainer := createPlayingLayout()
 
 	// Place all parts UI parts together
 	bodyParts := container.NewBorder(nil, nil, leftPane, nil, currentlyPlayingContainer)

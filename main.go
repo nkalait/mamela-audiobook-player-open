@@ -11,7 +11,6 @@ package main
 
 import (
 	"mamela/audio"
-	"mamela/types"
 	"mamela/ui"
 )
 
@@ -27,7 +26,6 @@ const appLabel = "Mamela"
 const rootPath string = ""
 
 // Carries info about currently playing audiobook
-var updateNowPlayingChannel = make(chan types.PlayingBook)
 
 // Listens to exit app event
 var exitApp = make(chan bool)
@@ -39,7 +37,7 @@ func main() {
 
 	}()
 	go func() {
-		audio.StartChannelListener(updateNowPlayingChannel, exitApp)
+		audio.StartChannelListener(exitApp)
 	}()
-	ui.BuildUI(appLabel, rootPath, updateNowPlayingChannel)
+	ui.BuildUI(appLabel, rootPath)
 }

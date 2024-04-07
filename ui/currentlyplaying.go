@@ -31,7 +31,7 @@ var playerButtonFastForward *widget.Button
 var playerButtonSkipNext *widget.Button
 var playerButtonSkipPrevious *widget.Button
 
-func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.Container {
+func createPlayingLayout() *fyne.Container {
 	initUI()
 	hideUIItems()
 
@@ -49,7 +49,7 @@ func createPlayingLayout(updateNowPlayingChannel chan types.PlayingBook) *fyne.C
 	))
 
 	go func() {
-		for playingBook := range updateNowPlayingChannel {
+		for playingBook := range audio.UpdateNowPlayingChannel {
 			if bookTitle.Hidden {
 				showUIItems()
 			}

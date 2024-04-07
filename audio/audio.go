@@ -23,6 +23,7 @@ const (
 )
 
 var ChannelAudioState = make(chan int)
+var UpdateNowPlayingChannel = make(chan types.PlayingBook)
 
 // Holds data structures important to playing an audiobook
 var player Player
@@ -73,8 +74,8 @@ const TickerDuration = 500 * time.Millisecond
 var Ticker = time.NewTicker(TickerDuration)
 
 // Start listening to audio playing event and exit event
-func StartChannelListener(updateNowPlayingChannel chan types.PlayingBook, exitApp chan bool) {
-	player.updater = updateNowPlayingChannel
+func StartChannelListener(exitApp chan bool) {
+	player.updater = UpdateNowPlayingChannel
 	go func() {
 	RoutineLoop:
 		for {
