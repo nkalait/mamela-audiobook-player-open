@@ -100,12 +100,6 @@ func hideUIItems() {
 func initBookArt() {
 	bookArt = canvas.NewImageFromImage(nil)
 	bookArt.FillMode = canvas.ImageFillContain
-
-	go func() {
-		for picture := range channelUpdateBookArt {
-			updateBookArt(picture)
-		}
-	}()
 }
 
 func initTitle() {

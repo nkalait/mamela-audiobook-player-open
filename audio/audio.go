@@ -5,7 +5,6 @@ import (
 	"mamela/err"
 	"mamela/types"
 	"math"
-	"os"
 	"time"
 
 	"github.com/dhowden/tag"
@@ -142,13 +141,9 @@ func updateUICurrentlyPlayingInfo() {
 	}
 }
 
-var channelBookArtUpdater chan *tag.Picture
+type UpdateFolderArtCallBack func(playingBook types.PlayingBook)
 
-// Start playing a selected audiobook
-func LoadAndPlay(playingBook types.PlayingBook, channelUpdateBookArt chan *tag.Picture) {
-	if channelUpdateBookArt != nil {
-		channelBookArtUpdater = channelUpdateBookArt
-	}
+func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateFolderArtCallBack) {
 	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
 	player.currentBook = playingBook
 	stopPlayingIfPlaying(player.channel, player)
@@ -159,28 +154,8 @@ func LoadAndPlay(playingBook types.PlayingBook, channelUpdateBookArt chan *tag.P
 		startPlaying()
 	}
 
-	// Priority for showing an audio book image is such that we
-	// first check if the file being played has an image
-	// embedded it it, if not then we check if there is an
-	// image file inside the audio book folder
-	if player.currentBook.Metadata != nil && player.currentBook.Metadata.Picture() != nil {
-		channelBookArtUpdater <- player.currentBook.Metadata.Picture()
-	} else if player.currentBook.FolderArt != "" {
-		fileBytes, e := os.ReadFile(player.currentBook.FullPath + "/" + player.currentBook.FolderArt)
-		if e == nil {
-			pic := tag.Picture{
-				// Ext:         "",
-				// MIMEType:    "",
-				// Type:        string // Type of the picture (see pictureTypes).
-				// Description  string // Description.
-				Data: fileBytes,
-			}
-			channelBookArtUpdater <- &pic
-		} else {
-			channelBookArtUpdater <- nil
-		}
-	} else {
-		channelBookArtUpdater <- nil
+	if updaterFolderArtCallback != nil {
+		updaterFolderArtCallback(player.currentBook)
 	}
 	updateUICurrentlyPlayingInfo()
 }
