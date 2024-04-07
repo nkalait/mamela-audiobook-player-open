@@ -3,7 +3,6 @@ package audio
 import (
 	"mamela/err"
 	"mamela/types"
-	"os"
 
 	bass "github.com/pteich/gobass"
 )
@@ -14,15 +13,18 @@ type Player struct {
 	channel     bass.Channel
 }
 
-func (p *Player) getCurrentFile() *os.File {
-	path := p.currentBook.FullPath + "/" + p.currentBook.Chapters[p.currentBook.CurrentChapter]
-	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-	return f
-}
+// func (p *Player) getCurrentFile() *os.File {
+// 	path := p.currentBook.FullPath + "/" + p.currentBook.Chapters[p.currentBook.CurrentChapter].FileName
+// 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+// 	return f
+// }
 
 func (p *Player) play() {
 	if p.channel != 0 {
 		e := p.channel.Play(false)
+		if e == nil {
+			Ticker.Reset(TickerDuration)
+		}
 		err.ShowError("", e)
 	}
 }
@@ -35,6 +37,7 @@ func (p *Player) pause() {
 		} else {
 			if active == bass.ACTIVE_PLAYING {
 				e := p.channel.Pause()
+				Ticker.Stop()
 				err.PanicError(e)
 			}
 		}
@@ -47,8 +50,10 @@ func (p *Player) stop() {
 		if e != nil {
 			err.ShowError("", e)
 		} else {
+			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUICurrentlyPlayingInfo()
+			Ticker.Stop()
 		}
 	}
 }
@@ -58,24 +63,16 @@ func (p *Player) fastRewind() {
 		active, e := player.channel.IsActive()
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(10)
+			bytePositionAmount, e := p.channel.Seconds2Bytes(60)
 			if e != nil {
 				err.ShowError("", e)
 			} else {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
-				if e != nil {
-					err.ShowError("", e)
-				} else {
+				if e == nil {
 					if currentBytePosition-bytePositionAmount < 0 {
-						e = p.channel.SetPosition(0, bass.POS_BYTE)
-						if e != nil {
-							err.ShowError("Error setting rewinding", e)
-						}
+						p.channel.SetPosition(0, bass.POS_BYTE)
 					} else {
-						e = p.channel.SetPosition(currentBytePosition-bytePositionAmount, bass.POS_BYTE)
-						if e != nil {
-							err.ShowError("Error setting rewinding", e)
-						}
+						p.channel.SetPosition(currentBytePosition-bytePositionAmount, bass.POS_BYTE)
 					}
 				}
 			}
@@ -88,7 +85,7 @@ func (p *Player) fastForward() {
 		active, e := player.channel.IsActive()
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(10)
+			bytePositionAmount, e := p.channel.Seconds2Bytes(60)
 			if e != nil {
 				err.ShowError("", e)
 			} else {
@@ -97,20 +94,15 @@ func (p *Player) fastForward() {
 					err.ShowError("", e)
 				} else {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
-					if e != nil {
-						err.ShowError("Error setting fast forwarding", e)
-					}
-					if currentBytePosition+bytePositionAmount >= byteLength {
-						e = p.channel.SetPosition(byteLength, bass.POS_BYTE)
-						if e != nil {
-							err.ShowError("Error setting fast forwarding", e)
-						}
-					} else {
-						e = p.channel.SetPosition(currentBytePosition+bytePositionAmount, bass.POS_BYTE)
-						if e != nil {
-							err.ShowError("Error setting fast forwarding", e)
+					if e == nil {
+						if currentBytePosition+bytePositionAmount >= byteLength {
+							p.channel.SetPosition(byteLength, bass.POS_BYTE)
+
+						} else {
+							p.channel.SetPosition(currentBytePosition+bytePositionAmount, bass.POS_BYTE)
 						}
 					}
+
 				}
 			}
 		}

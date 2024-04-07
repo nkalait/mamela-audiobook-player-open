@@ -17,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dhowden/tag"
+	bass "github.com/pteich/gobass"
 	"github.com/sqweek/dialog"
 )
 
@@ -126,7 +127,11 @@ func getAudioBooks() ([]types.Book, error) {
 							name := strings.ToLower(i.Name())
 							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(name)) {
 								isAValidAudioBook = true
-								book.Chapters = append(book.Chapters, i.Name())
+								chapter := types.Chapter{
+									FileName:        i.Name(),
+									LengthInSeconds: getChapterLengthInSeconds(bookFullPath, i.Name()),
+								}
+								book.Chapters = append(book.Chapters, chapter)
 							} else if slices.Contains(filetypes.BookArtFileTypes, filepath.Ext(name)) {
 								// If the folder contains an image file, get the one of best quality
 								if i.Size() > highestQuality {
@@ -142,6 +147,7 @@ func getAudioBooks() ([]types.Book, error) {
 					book.Title = b.Name()
 					book.FullPath = bookFullPath
 					book.FolderArt = folderArt
+					book.FullLengthSeconds = getFullBookLengthSeconds(book.Chapters)
 					book.Metadata = getFileTag(book)
 					bookList = append(bookList, book)
 				}
@@ -152,7 +158,7 @@ func getAudioBooks() ([]types.Book, error) {
 }
 
 func getBookFile(b types.Book) *os.File {
-	path := b.FullPath + "/" + b.Chapters[0]
+	path := b.FullPath + "/" + b.Chapters[0].FileName
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	return f
 }
@@ -165,4 +171,28 @@ func getFileTag(b types.Book) tag.Metadata {
 		f.Close()
 	}
 	return meta
+}
+
+func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
+	length := float64(0)
+	c, e := bass.StreamCreateFile(fullPath+"/"+fileName, 0, bass.AsyncFile)
+	if e == nil {
+		bytesLen, e := c.GetLength(bass.POS_BYTE)
+		if e == nil {
+			t, e := c.Bytes2Seconds(bytesLen)
+			if e == nil {
+				length = t
+			}
+		}
+	}
+	c.Free()
+	return length
+}
+
+func getFullBookLengthSeconds(chapters []types.Chapter) float64 {
+	length := float64(0)
+	for i := 0; i < len(chapters); i++ {
+		length = length + chapters[i].LengthInSeconds
+	}
+	return length
 }

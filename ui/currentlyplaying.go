@@ -163,11 +163,9 @@ func layoutPlayerButtons() *fyne.Container {
 
 func updatePlaying(p types.PlayingBook) {
 	updateTitle(p.Title)
-	updatePlayingPosition(p.Position)
-
+	updatePlayingPosition(p)
 	d := time.Duration(math.Round(p.FullLengthSeconds * 1000000000))
 	updateBookFullLength(audio.SecondsToTimeText(d))
-
 }
 
 func clearBookArt() {
@@ -202,7 +200,7 @@ func updateBookFullLength(bookLength string) {
 	bookFullLength.Refresh()
 }
 
-func updatePlayingPosition(p time.Duration) {
-	playingPosition.Text = audio.SecondsToTimeText(p)
+func updatePlayingPosition(p types.PlayingBook) {
+	playingPosition.Text = audio.SecondsToTimeText(audio.GetCurrentBookPlayingDuration(p))
 	playingPosition.Refresh()
 }

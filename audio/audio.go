@@ -60,6 +60,10 @@ func loadPlugins() []uint32 {
 	return plugins
 }
 
+const TickerDuration = 500 * time.Millisecond
+
+var Ticker = time.NewTicker(TickerDuration)
+
 // Start listening to audio playing event and exit event
 func StartChannelListener(updateNowPlayingChannel chan types.PlayingBook, exitApp chan bool) {
 	player.updater = updateNowPlayingChannel
@@ -67,7 +71,8 @@ func StartChannelListener(updateNowPlayingChannel chan types.PlayingBook, exitAp
 	RoutineLoop:
 		for {
 			select {
-			case <-time.After(time.Second):
+			// case <-time.After(time.Second):
+			case <-Ticker.C:
 				updateUICurrentlyPlayingInfo()
 			case <-exitListener:
 				break RoutineLoop
@@ -101,40 +106,38 @@ func SecondsToTimeText(seconds time.Duration) string {
 	return sh + " : " + sm + " : " + ss
 }
 
-// Get the full length in seconds of the currently playing audiobook
-func getFullBookLengthSeconds(book types.Book) float64 {
-	length := float64(0)
-	for i := 0; i < len(book.Chapters); i++ {
-		c, e := bass.StreamCreateFile(book.FullPath+"/"+book.Chapters[i], 0, bass.AsyncFile)
-		if e == nil {
-			bytesLen, e := c.GetLength(bass.POS_BYTE)
-			if e == nil {
-				t, e := player.channel.Bytes2Seconds(bytesLen)
-				if e == nil {
-					length = length + t
-				}
-			}
+func GetCurrentBookPlayingDuration(p types.PlayingBook) time.Duration {
+	pos := p.Position
+	if p.CurrentChapter > 0 {
+		for i := p.CurrentChapter - 1; i >= 0; i-- {
+			pos = pos + time.Duration(p.Chapters[i].LengthInSeconds*1000000000)
 		}
-		c.Free()
 	}
-	return length
+	return pos
 }
 
-// Update the currently playing audiobook information on the UI
+// Update the currently playing audio book information on the UI
 func updateUICurrentlyPlayingInfo() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
 		err.PanicError(e)
-		if active == bass.ACTIVE_PLAYING {
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
 			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
 			err.PanicError(e)
-
+			err.PanicError(e)
 			p, e := player.channel.Bytes2Seconds(bytePosition)
 			err.PanicError(e)
+			// fmt.Println(fmt.Sprint(GetCurrentBookPlayingDuration(player.currentBook)) + " = " + fmt.Sprint(time.Duration(player.currentBook.FullLengthSeconds*1000000000)))
+			if GetCurrentBookPlayingDuration(player.currentBook).Round(time.Second) == time.Duration(player.currentBook.FullLengthSeconds*1000000000).Round(time.Second) {
+				player.currentBook.Finished = true
+				Ticker.Stop()
+			}
 			var d time.Duration = time.Duration(math.Round(p * 1000000000))
 			player.currentBook.Position = time.Duration(d)
 		} else if active == bass.ACTIVE_STOPPED {
-			player.currentBook.Position = 0
+			if !player.currentBook.Finished {
+				player.currentBook.Position = 0
+			}
 		}
 		player.updater <- player.currentBook
 	}
@@ -148,7 +151,7 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 	stopPlayingIfPlaying(player.channel, player)
 
 	chapter := player.currentBook.CurrentChapter
-	e := loadAudioBookFile(player.currentBook.FullPath + "/" + player.currentBook.Chapters[chapter])
+	e := loadAudioBookFile(player.currentBook.FullPath + "/" + player.currentBook.Chapters[chapter].FileName)
 	if e == nil {
 		startPlaying()
 	}
@@ -175,6 +178,7 @@ func loadAudioBookFile(fullPath string) error {
 	if e != nil {
 		err.ShowError("There seems to be a problem loading the the audio book file(s)", e)
 	}
+
 	return e
 }
 
@@ -183,7 +187,6 @@ func startPlaying() error {
 	if e != nil {
 		err.ShowError("There seems to be a problem playing the the audio book file(s)", e)
 	} else {
-		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.currentBook.Book)
 		player.play()
 	}
 	return e
