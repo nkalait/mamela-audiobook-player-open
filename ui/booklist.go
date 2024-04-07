@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dhowden/tag"
 	"github.com/sqweek/dialog"
 )
 
@@ -141,10 +142,27 @@ func getAudioBooks() ([]types.Book, error) {
 					book.Title = b.Name()
 					book.FullPath = bookFullPath
 					book.FolderArt = folderArt
+					book.Metadata = getFileTag(book)
 					bookList = append(bookList, book)
 				}
 			}
 		}
 	}
 	return bookList, nil
+}
+
+func getBookFile(b types.Book) *os.File {
+	path := b.FullPath + "/" + b.Chapters[0]
+	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	return f
+}
+
+func getFileTag(b types.Book) tag.Metadata {
+	f := getBookFile(b)
+	var meta tag.Metadata = nil
+	if f != nil {
+		meta, _ = tag.ReadFrom(f)
+		f.Close()
+	}
+	return meta
 }

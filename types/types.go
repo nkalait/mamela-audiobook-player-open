@@ -12,6 +12,7 @@ type Book struct {
 	FullPath  string
 	Chapters  []string // Each file name
 	FolderArt string
+	Metadata  tag.Metadata
 }
 
 // An audiobook that is currently playing
@@ -20,5 +21,4 @@ type PlayingBook struct {
 	CurrentChapter    int
 	Position          time.Duration
 	FullLengthSeconds float64
-	Metadata          tag.Metadata
 }

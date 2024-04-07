@@ -7,7 +7,6 @@ import (
 	"math"
 	"time"
 
-	"github.com/dhowden/tag"
 	bass "github.com/pteich/gobass"
 )
 
@@ -186,17 +185,6 @@ func startPlaying() error {
 	} else {
 		player.currentBook.FullLengthSeconds = getFullBookLengthSeconds(player.currentBook.Book)
 		player.play()
-		player.currentBook.Metadata = channelGetTag(player)
 	}
 	return e
-}
-
-func channelGetTag(p Player) tag.Metadata {
-	f := p.getCurrentFile()
-	var meta tag.Metadata = nil
-	if f != nil {
-		meta, _ = tag.ReadFrom(f)
-		f.Close()
-	}
-	return meta
 }
