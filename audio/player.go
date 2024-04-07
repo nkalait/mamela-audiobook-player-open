@@ -24,6 +24,7 @@ func (p *Player) play() {
 		e := p.channel.Play(false)
 		if e == nil {
 			Ticker.Reset(TickerDuration)
+			ChannelAudioState <- Playing
 		}
 		err.ShowError("", e)
 	}
@@ -38,6 +39,7 @@ func (p *Player) pause() {
 			if active == bass.ACTIVE_PLAYING {
 				e := p.channel.Pause()
 				Ticker.Stop()
+				ChannelAudioState <- Paused
 				err.PanicError(e)
 			}
 		}
@@ -54,6 +56,7 @@ func (p *Player) stop() {
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUICurrentlyPlayingInfo()
 			Ticker.Stop()
+			ChannelAudioState <- Stopped
 		}
 	}
 }

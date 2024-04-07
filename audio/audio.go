@@ -16,6 +16,14 @@ var (
 	exitAudio    = make(chan bool) // for unloading audio stuff
 )
 
+const (
+	Stopped = iota
+	Paused
+	Playing
+)
+
+var ChannelAudioState = make(chan int)
+
 // Holds data structures important to playing an audiobook
 var player Player
 
@@ -131,6 +139,7 @@ func updateUICurrentlyPlayingInfo() {
 			if GetCurrentBookPlayingDuration(player.currentBook).Round(time.Second) == time.Duration(player.currentBook.FullLengthSeconds*1000000000).Round(time.Second) {
 				player.currentBook.Finished = true
 				Ticker.Stop()
+				ChannelAudioState <- Stopped
 			}
 			var d time.Duration = time.Duration(math.Round(p * 1000000000))
 			player.currentBook.Position = time.Duration(d)
@@ -138,6 +147,7 @@ func updateUICurrentlyPlayingInfo() {
 			if !player.currentBook.Finished {
 				player.currentBook.Position = 0
 			}
+			ChannelAudioState <- Stopped
 		}
 		player.updater <- player.currentBook
 	}
