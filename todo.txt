@@ -1,0 +1,3 @@
+- allow skipping to next file(chapter) when the whole file has been played
+- allow fast forward to also skip to next file
+- allow fast rewind to also skip to previous file
