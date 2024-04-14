@@ -67,13 +67,26 @@ func (p *Player) fastRewind() {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
 				if e == nil {
 					if currentBytePosition-bytePositionAmount < 0 {
-						p.channel.SetPosition(0, bass.POS_BYTE)
+						if skipToPreviousFile(p) {
+							completeFileByteLength, e := p.channel.GetLength(bass.POS_BYTE)
+							if e == nil {
+								newPos := completeFileByteLength - bytePositionAmount
+								if currentBytePosition < bytePositionAmount {
+									deductBy := bytePositionAmount - currentBytePosition
+									newPos = completeFileByteLength - deductBy
+								}
+								p.channel.SetPosition(newPos, bass.POS_BYTE)
+							}
+						} else {
+							p.channel.SetPosition(0, bass.POS_BYTE)
+						}
 					} else {
 						p.channel.SetPosition(currentBytePosition-bytePositionAmount, bass.POS_BYTE)
 					}
 				}
 			}
 		}
+		updateUICurrentlyPlayingInfo()
 	}
 }
 
@@ -93,7 +106,7 @@ func (p *Player) fastForward() {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
 					if e == nil {
 						if currentBytePosition+bytePositionAmount >= byteLength {
-							if !SkipToNextFile(p) {
+							if !skipToNextFile(p) {
 								p.channel.SetPosition(byteLength, bass.POS_BYTE)
 							}
 						} else {
@@ -104,32 +117,16 @@ func (p *Player) fastForward() {
 				}
 			}
 		}
+		updateUICurrentlyPlayingInfo()
 	}
 }
 
 func (p *Player) skipNext() {
-	SkipToNextFile(p)
+	skipToNextFile(p)
 }
 
 func (p *Player) skipPrevious() {
-	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		err.ShowError("Error skipping to previous chapter", e)
-		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
-			numChapters := len(player.currentBook.Chapters)
-			if numChapters > 0 {
-				if player.currentBook.CurrentChapter > 0 {
-					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter - 1
-					LoadAndPlay(p.currentBook, nil)
-				} else {
-					e = p.channel.SetPosition(0, bass.POS_BYTE)
-					if e != nil {
-						err.ShowError("Error to skipping to start", e)
-					}
-				}
-			}
-		}
-	}
+	skipToPreviousFile(p)
 }
 
 func Play() {
