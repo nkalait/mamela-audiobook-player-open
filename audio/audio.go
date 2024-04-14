@@ -104,7 +104,7 @@ func pad(i int) string {
 // Convert seconds to time in hh : mm : ss
 func SecondsToTimeText(seconds time.Duration) string {
 	var h int = int(seconds.Seconds()) / 3600
-	var m int = int(seconds.Seconds()) / 60
+	var m int = (int(seconds.Seconds()) / 60) % 60
 	var s int = int(seconds.Seconds()) % 60
 
 	sh := pad(h)
