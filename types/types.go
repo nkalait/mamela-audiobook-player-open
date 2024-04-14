@@ -25,7 +25,7 @@ type Book struct {
 // An audiobook that is currently playing
 type PlayingBook struct {
 	Book
-	CurrentChapter int
-	Finished       bool
-	Position       time.Duration
+	CurrentChapter int           // Currently playing chapter
+	Finished       bool          // Has the audio book finished playing or not
+	Position       time.Duration // Position in the currently playing file
 }

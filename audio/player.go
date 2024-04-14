@@ -55,12 +55,14 @@ func (p *Player) stop() {
 	}
 }
 
+const fastForwardRewindAmount = 30
+
 func (p *Player) fastRewind() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(60)
+			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if e != nil {
 				err.ShowError("", e)
 			} else {
@@ -95,7 +97,7 @@ func (p *Player) fastForward() {
 		active, e := player.channel.IsActive()
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(60)
+			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if e != nil {
 				err.ShowError("", e)
 			} else {
@@ -106,7 +108,7 @@ func (p *Player) fastForward() {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
 					if e == nil {
 						if currentBytePosition+bytePositionAmount >= byteLength {
-							if !skipToNextFile(p) {
+							if !skipToNextFile(p, false) {
 								p.channel.SetPosition(byteLength, bass.POS_BYTE)
 							}
 						} else {
@@ -122,7 +124,7 @@ func (p *Player) fastForward() {
 }
 
 func (p *Player) skipNext() {
-	skipToNextFile(p)
+	skipToNextFile(p, false)
 }
 
 func (p *Player) skipPrevious() {

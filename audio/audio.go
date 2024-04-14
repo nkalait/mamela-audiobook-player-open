@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mamela/err"
 	"mamela/types"
-	"math"
 	"time"
 
 	bass "github.com/pteich/gobass"
@@ -133,16 +132,23 @@ func updateUICurrentlyPlayingInfo() {
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
 			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
 			err.PanicError(e)
-			err.PanicError(e)
 			p, e := player.channel.Bytes2Seconds(bytePosition)
 			err.PanicError(e)
-			// fmt.Println(fmt.Sprint(GetCurrentBookPlayingDuration(player.currentBook)) + " = " + fmt.Sprint(time.Duration(player.currentBook.FullLengthSeconds*1000000000)))
-			if GetCurrentBookPlayingDuration(player.currentBook).Round(time.Second) == time.Duration(player.currentBook.FullLengthSeconds*1000000000).Round(time.Second) {
+
+			currentlyAt := player.currentBook.Position.Round(time.Second)
+			skipAt := time.Duration(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds * 1000000000).Round(time.Second)
+			if currentlyAt == skipAt {
+				skipToNextFile(&player, true)
+			}
+
+			posInWholeBook := GetCurrentBookPlayingDuration(player.currentBook).Round(time.Second)
+			wholeBookLength := time.Duration(player.currentBook.FullLengthSeconds * 1000000000).Round(time.Second)
+			if posInWholeBook == wholeBookLength {
 				player.currentBook.Finished = true
 				Ticker.Stop()
 				ChannelAudioState <- Stopped
 			}
-			var d time.Duration = time.Duration(math.Round(p * 1000000000))
+			var d time.Duration = time.Duration(p * 1000000000)
 			player.currentBook.Position = time.Duration(d)
 		} else if active == bass.ACTIVE_STOPPED {
 			if !player.currentBook.Finished {
@@ -203,12 +209,12 @@ func startPlaying() error {
 	return e
 }
 
-func skipToNextFile(p *Player) bool {
+func skipToNextFile(p *Player, forceSkip bool) bool {
 	skipped := false
 	if p.channel != 0 {
 		active, e := p.channel.IsActive()
 		err.ShowError("Error skipping to next chapter", e)
-		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED || forceSkip {
 			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
 				if p.currentBook.CurrentChapter < numChapters-1 {
@@ -224,14 +230,14 @@ func skipToNextFile(p *Player) bool {
 
 func skipToPreviousFile(p *Player) bool {
 	skipped := false
-	if player.channel != 0 {
-		active, e := player.channel.IsActive()
+	if p.channel != 0 {
+		active, e := p.channel.IsActive()
 		err.ShowError("Error skipping to previous chapter", e)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
-			numChapters := len(player.currentBook.Chapters)
+			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
-				if player.currentBook.CurrentChapter > 0 {
-					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter - 1
+				if p.currentBook.CurrentChapter > 0 {
+					p.currentBook.CurrentChapter = p.currentBook.CurrentChapter - 1
 					LoadAndPlay(p.currentBook, nil)
 					skipped = true
 				} else {
