@@ -2,9 +2,9 @@ package ui
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"mamela/audio"
+	"mamela/err"
 	"mamela/types"
 	"math"
 	"time"
@@ -203,9 +203,9 @@ func updateBookArt(pic *tag.Picture) {
 	if len(pic.Data) == 0 {
 		return
 	}
-	img, _, err := image.Decode(bytes.NewReader(pic.Data))
-	if err != nil {
-		fmt.Print(err)
+	img, _, e := image.Decode(bytes.NewReader(pic.Data))
+	if e != nil {
+		err.ShowError("Problem loading audio book image", e)
 		return
 	}
 	bookArt.Image = img
