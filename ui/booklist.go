@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"mamela/err"
 	"mamela/filetypes"
+	"mamela/storage"
 	"mamela/types"
 	"os"
 	"path/filepath"
@@ -83,6 +84,8 @@ func createFileDialogButton() *widget.Button {
 			dialog.Message(e.Error())
 		} else if path != "" {
 			rootPath = path
+			storage.Data.Root = path
+			storage.SaveDataToStorageFile()
 			updateBookListChannel <- true
 		}
 

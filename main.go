@@ -11,6 +11,7 @@ package main
 
 import (
 	"mamela/audio"
+	"mamela/storage"
 	"mamela/ui"
 )
 
@@ -23,7 +24,7 @@ import (
 const appLabel = "Mamela"
 
 // The root folder where audio books will be place, this variable here is for testing only
-const rootPath string = ""
+var rootPath string = ""
 
 // Carries info about currently playing audiobook
 
@@ -31,6 +32,7 @@ const rootPath string = ""
 var exitApp = make(chan bool)
 
 func main() {
+	rootPath = storage.Data.Root
 	go func() {
 		<-exitApp
 		ui.MainWindow.Close()
