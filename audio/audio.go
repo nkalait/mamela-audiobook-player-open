@@ -202,3 +202,22 @@ func startPlaying() error {
 	}
 	return e
 }
+
+func SkipToNextFile(p *Player) bool {
+	skipped := false
+	if p.channel != 0 {
+		active, e := p.channel.IsActive()
+		err.ShowError("Error skipping to next chapter", e)
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
+			numChapters := len(p.currentBook.Chapters)
+			if numChapters > 0 {
+				if p.currentBook.CurrentChapter < numChapters-1 {
+					p.currentBook.CurrentChapter = p.currentBook.CurrentChapter + 1
+					LoadAndPlay(p.currentBook, nil)
+					skipped = true
+				}
+			}
+		}
+	}
+	return skipped
+}

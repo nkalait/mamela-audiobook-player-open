@@ -13,12 +13,6 @@ type Player struct {
 	channel     bass.Channel
 }
 
-// func (p *Player) getCurrentFile() *os.File {
-// 	path := p.currentBook.FullPath + "/" + p.currentBook.Chapters[p.currentBook.CurrentChapter].FileName
-// 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
-// 	return f
-// }
-
 func (p *Player) play() {
 	if p.channel != 0 {
 		e := p.channel.Play(false)
@@ -99,8 +93,9 @@ func (p *Player) fastForward() {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
 					if e == nil {
 						if currentBytePosition+bytePositionAmount >= byteLength {
-							p.channel.SetPosition(byteLength, bass.POS_BYTE)
-
+							if !SkipToNextFile(p) {
+								p.channel.SetPosition(byteLength, bass.POS_BYTE)
+							}
 						} else {
 							p.channel.SetPosition(currentBytePosition+bytePositionAmount, bass.POS_BYTE)
 						}
@@ -113,19 +108,7 @@ func (p *Player) fastForward() {
 }
 
 func (p *Player) skipNext() {
-	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		err.ShowError("Error skipping to next chapter", e)
-		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
-			numChapters := len(player.currentBook.Chapters)
-			if numChapters > 0 {
-				if player.currentBook.CurrentChapter < numChapters-1 {
-					player.currentBook.CurrentChapter = player.currentBook.CurrentChapter + 1
-					LoadAndPlay(p.currentBook, nil)
-				}
-			}
-		}
-	}
+	SkipToNextFile(p)
 }
 
 func (p *Player) skipPrevious() {
