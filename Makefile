@@ -5,6 +5,7 @@ build:
 	mkdir -p ${LIB}
 	cp lib/mac/libbass.dylib ${LIB}
 	cp lib/mac/libbass_aac.dylib ${LIB}
+	cp lib/mac/libbassopus.dylib ${LIB}
 
 #	GOARCH=amd64 GOOS=darwin go build -tags debug -o app/${BINARY_NAME}-darwin main.go
 	GOARCH=amd64 GOOS=darwin go build -o app/${BINARY_NAME}-darwin main.go
@@ -12,7 +13,8 @@ build:
 #	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows main.go
 
 	install_name_tool -change @loader_path/libbass.dylib @loader_path/lib/mac/libbass.dylib app/mamela_audiobook_player-darwin
-	app/${BINARY_NAME}-darwin
+	cd app && ./${BINARY_NAME}-darwin
+
 
 run: build
 	./${BINARY_NAME}
