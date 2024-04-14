@@ -1,4 +1,4 @@
 - test code coverage
-- start play where user stopped for each audio book
+- start playing where user stopped for each audio book
 - for files with chapter information embedded in them, allow skipping to next/previous chapter (will use ffmpeg for now)
 - have a stop, shutdown timer
