@@ -9,4 +9,4 @@ The aim is to build, using **Go**, an audio book player that works just right on
 The code uses BASS(https://www.un4seen.com) somewhere under the hood so please go read on their website about licencing
 
 # Attributions
-![app icon]("https://www.flaticon.com/free-icons/cute) title="cute icons"> Cute icons created by Smashicons - Flaticon</a> App icon made by Smashicons perfect from www.flaticon.com
+![app icon](https://www.flaticon.com/free-icons/cute) App icon made by Smashicons perfect from www.flaticon.com
