@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"log"
 	"mamela/buildconstraints"
 	"mamela/err"
 	"mamela/filetypes"
@@ -84,8 +85,9 @@ func createFileDialogButton() *widget.Button {
 		if e != nil {
 			dialog.Message(e.Error())
 		} else if path != "" {
-			rootPath = path
 			storage.Data.Root = path
+			rootPath = storage.Data.Root
+			log.Println(rootPath)
 			storage.SaveDataToStorageFile()
 			updateBookListChannel <- true
 		}

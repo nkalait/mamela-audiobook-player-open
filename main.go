@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"mamela/audio"
 	"mamela/storage"
 	"mamela/ui"
@@ -23,7 +24,9 @@ var rootPath string = ""
 var exitApp = make(chan bool)
 
 func main() {
+	storage.LoadStorageFile()
 	rootPath = storage.Data.Root
+	log.Println("main root path: " + rootPath)
 	go func() {
 		<-exitApp
 		ui.MainWindow.Close()

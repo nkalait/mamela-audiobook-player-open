@@ -2,4 +2,4 @@
 
 package buildconstraints
 
-const PathSeparator = "/"
+const PathSeparator string = "/"

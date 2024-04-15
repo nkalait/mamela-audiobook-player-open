@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# fyne cross compiler folder
+fyne-cross/
+
 tester
 
 # Output of the go coverage tool, specifically when used with LiteIDE

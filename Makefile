@@ -1,5 +1,10 @@
 BINARY_NAME=mamela_audiobook_player
 LIB=app/lib/mac
+PACK_LIB_MAC=mamela.app/Contents/lib/mac
+APP_DIR_MAC=mamela.app/Contents/MacOS
+PACK_DB_DIR_MAC=mamela.app/Contents/db
+
+.DEFAULT_GOAL := run 
 
 build:
 	mkdir -p ${LIB}
@@ -14,6 +19,19 @@ build:
 
 	install_name_tool -change @loader_path/libbass.dylib @loader_path/lib/mac/libbass.dylib app/mamela_audiobook_player-darwin
 	cd app && ./${BINARY_NAME}-darwin
+
+pack_mac:
+	fyne package -os darwin -appID mamela.co.ls --tags prod_mac --release
+	mkdir -p ${PACK_LIB_MAC}
+	cp lib/mac/libbass.dylib ${PACK_LIB_MAC}
+	cp lib/mac/libbass_aac.dylib ${PACK_LIB_MAC}
+	cp lib/mac/libbassopus.dylib ${PACK_LIB_MAC}
+	mkdir -p ${PACK_DB_DIR_MAC}
+	touch ${PACK_DB_DIR_MAC}/data.json
+	chmod 777 ${PACK_DB_DIR_MAC}/data.json 
+	install_name_tool -change @loader_path/libbass.dylib @loader_path/../lib/mac/libbass.dylib ${APP_DIR_MAC}/mamela
+
+#	fyne-cross linux -arch=* -app-id="nada.co"
 
 
 run: build

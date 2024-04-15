@@ -34,6 +34,7 @@ func (p *Player) pause() {
 				e := p.channel.Pause()
 				Ticker.Stop()
 				ChannelAudioState <- Paused
+				err.ShowError("", e)
 				err.PanicError(e)
 			}
 		}
@@ -60,6 +61,7 @@ const fastForwardRewindAmount = 30
 func (p *Player) fastRewind() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
+		err.ShowError("", e)
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
@@ -95,6 +97,7 @@ func (p *Player) fastRewind() {
 func (p *Player) fastForward() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
+		err.ShowError("", e)
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)

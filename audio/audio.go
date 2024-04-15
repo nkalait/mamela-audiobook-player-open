@@ -10,6 +10,8 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
+var libDir = "lib" + buildconstraints.PathSeparator + "mac"
+
 // Event listeners
 var (
 	exitListener = make(chan bool) // for stopping to listen to playing events
@@ -51,15 +53,18 @@ func tearDown(plugins []uint32) {
 // Initialise Bass
 func initBass() {
 	e := bass.Init(-1, 44100, bass.DeviceStereo, 0, 0)
+	err.ShowError("Problem initiating bass", e)
 	err.PanicError(e)
 	bass.SetVolume(100)
 }
 
 // Load pluggins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, e := bass.PluginLoad("lib"+buildconstraints.PathSeparator+"mac"+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, e := bass.PluginLoad(libDir+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
-	pluginLibbassOpus, e := bass.PluginLoad("lib"+buildconstraints.PathSeparator+"mac"+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	pluginLibbassOpus, e := bass.PluginLoad(libDir+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
 
 	plugins := make([]uint32, 2)
@@ -129,11 +134,14 @@ func GetCurrentBookPlayingDuration(p types.PlayingBook) time.Duration {
 func updateUICurrentlyPlayingInfo() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
+		err.ShowError("", e)
 		err.PanicError(e)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
 			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
+			err.ShowError("", e)
 			err.PanicError(e)
 			p, e := player.channel.Bytes2Seconds(bytePosition)
+			err.ShowError("", e)
 			err.PanicError(e)
 
 			currentlyAt := player.currentBook.Position.Round(time.Second)
@@ -183,6 +191,7 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 func stopPlayingIfPlaying(c bass.Channel, p Player) {
 	if c != 0 {
 		a, e := c.IsActive()
+		err.ShowError("", e)
 		err.PanicError(e)
 		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
 			p.stop()
