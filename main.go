@@ -1,14 +1,5 @@
 package main
 
-// import (
-// 	_ "unsafe"
-
-// 	/*
-// 	   #cgo darwin LDFLAGS: -L${SRCDIR}/lib/mac -llibbass
-// 	*/
-// 	"C"
-// )
-
 import (
 	"mamela/audio"
 	"mamela/storage"

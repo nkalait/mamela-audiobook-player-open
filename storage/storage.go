@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const storageFile = "./data.json"
+const storageFile = "data.json"
 
 type Store struct {
 	Root string `json:"root"` // Rest of the fields should go here.

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"mamela/buildconstraints"
 	"mamela/err"
 	"mamela/filetypes"
 	"mamela/storage"
@@ -117,7 +118,7 @@ func getAudioBooks() ([]types.Book, error) {
 	for _, b := range rootFolderEntries {
 		isAValidAudioBook := false
 		if b.IsDir() {
-			var bookFullPath = rootPath + "/" + b.Name()
+			var bookFullPath = rootPath + buildconstraints.PathSeparator + b.Name()
 			bookFolder, e := os.ReadDir(bookFullPath)
 			if e == nil {
 				highestQuality := int64(0)
@@ -161,7 +162,7 @@ func getAudioBooks() ([]types.Book, error) {
 }
 
 func getBookFile(b types.Book) *os.File {
-	path := b.FullPath + "/" + b.Chapters[0].FileName
+	path := b.FullPath + buildconstraints.PathSeparator + b.Chapters[0].FileName
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	return f
 }
@@ -178,7 +179,7 @@ func getFileTag(b types.Book) tag.Metadata {
 
 func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
 	length := float64(0)
-	c, e := bass.StreamCreateFile(fullPath+"/"+fileName, 0, bass.AsyncFile)
+	c, e := bass.StreamCreateFile(fullPath+buildconstraints.PathSeparator+fileName, 0, bass.AsyncFile)
 	if e == nil {
 		bytesLen, e := c.GetLength(bass.POS_BYTE)
 		if e == nil {

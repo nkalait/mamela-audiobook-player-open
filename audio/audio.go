@@ -2,6 +2,7 @@ package audio
 
 import (
 	"fmt"
+	"mamela/buildconstraints"
 	"mamela/err"
 	"mamela/types"
 	"time"
@@ -56,9 +57,9 @@ func initBass() {
 
 // Load pluggins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, e := bass.PluginLoad("lib/mac/libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, e := bass.PluginLoad("lib"+buildconstraints.PathSeparator+"mac"+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
 	err.PanicError(e)
-	pluginLibbassOpus, e := bass.PluginLoad("lib/mac/libbassopus.dylib", bass.StreamDecode)
+	pluginLibbassOpus, e := bass.PluginLoad("lib"+buildconstraints.PathSeparator+"mac"+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
 	err.PanicError(e)
 
 	plugins := make([]uint32, 2)
@@ -168,7 +169,7 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 	stopPlayingIfPlaying(player.channel, player)
 
 	chapter := player.currentBook.CurrentChapter
-	e := loadAudioBookFile(player.currentBook.FullPath + "/" + player.currentBook.Chapters[chapter].FileName)
+	e := loadAudioBookFile(player.currentBook.FullPath + buildconstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
 	if e == nil {
 		startPlaying()
 	}
