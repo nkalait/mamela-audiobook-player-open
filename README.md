@@ -9,6 +9,6 @@ The aim is to build, using **Go**, an audio book player that works just right on
 The code uses BASS(https://www.un4seen.com) somewhere under the hood so please go read on their website about licencing
 
 # Attributions
-<img alt="app icon" src="https://github.com/nkalait/mamela-audiobook-player/blob/main/Icon.png?raw=true" width="16" height="16"> App icon made by Smashicons perfect from www.flaticon.com
+<img alt="app icon" src="https://github.com/nkalait/mamela-audiobook-player/blob/main/Icon.png?raw=true" width="24" height="24"> App icon made by Smashicons perfect from www.flaticon.com
 
 
