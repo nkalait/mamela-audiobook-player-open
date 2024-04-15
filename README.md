@@ -9,4 +9,4 @@ The aim is to build, using **Go**, an audio book player that works just right on
 The code uses BASS(https://www.un4seen.com) somewhere under the hood so please go read on their website about licencing
 
 # Attributions
-![app icon](https://www.flaticon.com/free-icons/cute) App icon made by Smashicons perfect from www.flaticon.com
+![app icon](https://github.com/nkalait/mamela-audiobook-player/blob/main/Icon.png?raw=true) App icon made by Smashicons perfect from www.flaticon.com
