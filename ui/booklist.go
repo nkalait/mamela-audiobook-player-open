@@ -8,7 +8,6 @@ import (
 	"mamela/filetypes"
 	"mamela/storage"
 	"mamela/types"
-	"mamela/ui/customtheme"
 	"os"
 	"path/filepath"
 	"slices"
@@ -73,11 +72,8 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 	// TODO the dots below are just to give the scroller the desired width, NEED TO FIND A WAY TO DO THIS BETTER!!
 	dots := canvas.NewText("..........................................................", color.Transparent)
 	bookListScroller := container.NewVScroll(bookListVBox)
-	bookListVBoxContainerPadded := container.NewPadded(dots, bookListScroller)
-	// bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
-	bookListContainer := container.NewStack(canvas.NewRectangle(customtheme.GetColour(customtheme.ColourNameBackgroundLight)))
-	bookListContainer.Add(bookListVBoxContainerPadded)
-	return bookListContainer
+	hBox := container.NewStack(dots, bookListScroller)
+	return hBox
 }
 
 func createFileDialogButton() *widget.Button {

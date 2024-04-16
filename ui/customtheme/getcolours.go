@@ -40,7 +40,6 @@ func backgroundLightColor() color.Color {
 	if IsDark() {
 		return darkThemeColourBgLight
 	}
-	// TODO add light theme
 	if IsLight() {
 		return lightThemeColourBgLight
 	}
@@ -51,9 +50,18 @@ func foregroundColor() color.Color {
 	if IsDark() {
 		return darkThemeColourFg
 	}
-	// TODO add light theme
 	if IsLight() {
 		return lightThemeColourFg
+	}
+	return fyneTheme.ForegroundColor()
+}
+
+func buttonColor() color.Color {
+	if IsDark() {
+		return darkThemeColourButton
+	}
+	if IsLight() {
+		return lightThemeColourButton
 	}
 	return fyneTheme.ForegroundColor()
 }

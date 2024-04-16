@@ -7,9 +7,9 @@ import (
 	fyneTheme "fyne.io/fyne/v2/theme"
 )
 
-type lightTheme struct{}
+type darkTheme struct{}
 
-func (t lightTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+func (t darkTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
 	switch name {
 	case fyneTheme.ColorNameBackground:
 		return backgroundColor()
@@ -17,19 +17,21 @@ func (t lightTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) c
 		return foregroundColor()
 	case ColourNameBackgroundLight:
 		return backgroundLightColor()
+	case fyneTheme.ColorNameButton:
+		return buttonColor()
 	}
 	return fyneTheme.DefaultTheme().Color(name, variant)
 }
 
-func (t lightTheme) Font(style fyne.TextStyle) fyne.Resource {
+func (t darkTheme) Font(style fyne.TextStyle) fyne.Resource {
 	return fyneTheme.DefaultTheme().Font(style)
 }
 
-func (t lightTheme) Size(name fyne.ThemeSizeName) float32 {
+func (t darkTheme) Size(name fyne.ThemeSizeName) float32 {
 	return fyneTheme.DefaultTheme().Size(name)
 }
 
-func (t lightTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
+func (t darkTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 	// if name == theme.IconNameHome {
 	// 	return fyne.NewStaticResource("myHome", homeBytes)
 	// }
@@ -37,6 +39,6 @@ func (t lightTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 	return fyneTheme.DefaultTheme().Icon(name)
 }
 
-func LightTheme() fyne.Theme {
-	return &lightTheme{}
+func DarkTheme() fyne.Theme {
+	return &darkTheme{}
 }
