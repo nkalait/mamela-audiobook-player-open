@@ -1,4 +1,5 @@
 - test code coverage
+- FINISH UP WORKING WITH DARK AND LIGHT THEMES
 - load last audio book that was playing on start up
 - start playing where user stopped for each audio book
 - for files with chapter information embedded in them, allow skipping to next/previous chapter (will use ffmpeg for now)

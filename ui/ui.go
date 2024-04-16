@@ -2,10 +2,10 @@ package ui
 
 import (
 	"image/color"
+	"mamela/ui/customtheme"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 )
 
@@ -13,16 +13,12 @@ import (
 var rootPath = ""
 
 var (
-	colourDarkThemeBlack        = color.RGBA{33, 33, 33, 255}
-	colourDarkThemeBlackLight   = color.RGBA{38, 38, 38, 255}
+	// colourDarkThemeBlackLight   = color.RGBA{38, 38, 38, 255}
 	colourDarkThemeBlackLighter = color.RGBA{51, 51, 51, 255}
-	colourDarkThemeWhite        = color.RGBA{205, 205, 205, 255}
 )
 
 var (
-	textColour      = colourDarkThemeWhite
-	BgColour        = colourDarkThemeBlack
-	BgColourLight   = colourDarkThemeBlackLight
+	// BgColourLight   = colourDarkThemeBlackLight
 	BgColourLighter = colourDarkThemeBlackLighter
 )
 
@@ -34,6 +30,15 @@ var (
 func BuildUI(appLabel string, rootP string) {
 	rootPath = rootP
 	MamelaApp = app.New()
+	// MamelaApp.Settings().SetTheme(theme.DarkTheme())
+
+	// if customtheme.IsDark(fyne.CurrentApp().Settings().Theme()) {
+	if customtheme.IsLight() {
+		MamelaApp.Settings().SetTheme(customtheme.LightTheme())
+	} else {
+		MamelaApp.Settings().SetTheme(customtheme.DarkTheme())
+	}
+
 	MainWindow = MamelaApp.NewWindow(appLabel)
 
 	// UI to show list of audiobooks
@@ -45,9 +50,9 @@ func BuildUI(appLabel string, rootP string) {
 	// Place all parts UI parts together
 	bodyParts := container.NewBorder(nil, nil, leftPane, nil, currentlyPlayingContainer)
 
-	bodyBg := canvas.NewRectangle(BgColour)
-	body := container.NewStack(bodyBg, bodyParts)
-	main := container.NewGridWithColumns(1, body)
+	// bodyBg := canvas.NewRectangle(theme.BackgroundColor())
+	// body := container.NewStack(bodyBg, bodyParts)
+	main := container.NewGridWithColumns(1, bodyParts)
 	MainWindow.SetContent(main)
 	MainWindow.Resize(fyne.NewSize(800, 400))
 	MainWindow.ShowAndRun()

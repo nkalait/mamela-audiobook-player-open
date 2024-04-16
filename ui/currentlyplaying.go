@@ -125,7 +125,7 @@ func initBookArt() {
 }
 
 func initTitle() {
-	// bookTitle = canvas.NewText("", textColour)
+	// bookTitle = canvas.NewText("", theme.ForegroundColor())
 	bookTitle = widget.NewLabel("")
 	// bookTitle.TextSize = 16
 	bookTitle.Wrapping = fyne.TextWrapBreak
@@ -134,14 +134,14 @@ func initTitle() {
 }
 
 func initFullBookLength() {
-	bookFullLength = canvas.NewText("", textColour)
+	bookFullLength = canvas.NewText("", theme.ForegroundColor())
 	bookFullLength.TextSize = 18
 	// bookFullLength.TextStyle.Bold = true
 	bookFullLength.Alignment = fyne.TextAlignCenter
 }
 
 func initPlayingPosition() {
-	playingPosition = canvas.NewText("", textColour)
+	playingPosition = canvas.NewText("", theme.ForegroundColor())
 	playingPosition.TextSize = 18
 	playingPosition.Alignment = fyne.TextAlignCenter
 }

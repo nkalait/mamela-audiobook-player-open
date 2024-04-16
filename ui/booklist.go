@@ -8,6 +8,7 @@ import (
 	"mamela/filetypes"
 	"mamela/storage"
 	"mamela/types"
+	"mamela/ui/customtheme"
 	"os"
 	"path/filepath"
 	"slices"
@@ -60,7 +61,7 @@ func setBookListHeader() string {
 }
 
 func generateBookListContainerTop() *fyne.Container {
-	bookListHeaderTxt := canvas.NewText(setBookListHeader(), textColour)
+	bookListHeaderTxt := canvas.NewText(setBookListHeader(), theme.ForegroundColor())
 	bookListHeaderTxt.TextSize = 24
 	bookListHeaderTxt.TextStyle.Bold = true
 	spacer := canvas.NewText("    ", color.Transparent)
@@ -73,7 +74,8 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 	dots := canvas.NewText("..........................................................", color.Transparent)
 	bookListScroller := container.NewVScroll(bookListVBox)
 	bookListVBoxContainerPadded := container.NewPadded(dots, bookListScroller)
-	bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
+	// bookListContainer := container.NewStack(canvas.NewRectangle(BgColourLight))
+	bookListContainer := container.NewStack(canvas.NewRectangle(customtheme.GetColour(customtheme.ColourNameBackgroundLight)))
 	bookListContainer.Add(bookListVBoxContainerPadded)
 	return bookListContainer
 }
