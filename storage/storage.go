@@ -33,11 +33,11 @@ func checkStorageFile() bool {
 		// path/to/whatever does *not* exist
 		_, e := os.OpenFile(storageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if e != nil {
-			log.Panicln(e)
+			log.Println(e)
 		}
 	}
 	go func() {
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 3)
 		storageFileIsValid()
 	}()
 	return fileExisted
@@ -63,7 +63,6 @@ func readJSONToken() {
 	err.PanicError(e)
 	json.Unmarshal(file, &d)
 	Data.Root = d.Root
-	log.Printf("read storage file at %s\n", storageFile)
 }
 
 func SaveDataToStorageFile() {
@@ -71,5 +70,4 @@ func SaveDataToStorageFile() {
 	e := os.WriteFile(storageFile, jsonString, os.ModePerm)
 	err.ShowError("Problem writing to storage file", e)
 	err.PanicError(e)
-	log.Printf("saved storage file: %x\n", jsonString)
 }

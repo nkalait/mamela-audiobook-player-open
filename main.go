@@ -1,10 +1,12 @@
 package main
 
 import (
-	"log"
 	"mamela/audio"
 	"mamela/storage"
 	"mamela/ui"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Basically, this app plays audio books.
@@ -23,17 +25,33 @@ var rootPath string = ""
 // Listens to exit app event
 var exitApp = make(chan bool)
 
+func handleSignals() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGABRT)
+	<-c
+	onExit()
+	// exitApp <- true
+}
+
+func onExit() {
+	audio.ExitListener <- true
+}
+
 func main() {
+	// defer onExit()
 	storage.LoadStorageFile()
 	rootPath = storage.Data.Root
-	log.Println("main root path: " + rootPath)
 	go func() {
 		<-exitApp
+		onExit()
 		ui.MainWindow.Close()
-
 	}()
 	go func() {
 		audio.StartChannelListener(exitApp)
 	}()
+	go handleSignals()
+	<-audio.BassInitiatedChan
 	ui.BuildUI(appLabel, rootPath)
+	audio.ExitListener <- true
+	<-exitApp
 }

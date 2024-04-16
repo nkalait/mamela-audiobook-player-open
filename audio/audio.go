@@ -5,6 +5,7 @@ import (
 	"mamela/buildconstraints"
 	"mamela/err"
 	"mamela/types"
+	"os"
 	"time"
 
 	bass "github.com/pteich/gobass"
@@ -14,31 +15,35 @@ var libDir = "lib" + buildconstraints.PathSeparator + "mac"
 
 // Event listeners
 var (
-	exitListener = make(chan bool) // for stopping to listen to playing events
-	exitAudio    = make(chan bool) // for unloading audio stuff
+	ExitListener      = make(chan bool) // for stopping to listen to playing events
+	exitAudio         = make(chan bool) // for unloading audio stuff
+	BassInitiatedChan = make(chan bool)
 )
 
-const (
-	Stopped = iota
-	Paused
-	Playing
-)
+// const (
+// 	Stopped = iota
+// 	Paused
+// 	Playing
+// )
 
-var ChannelAudioState = make(chan int)
+// var ChannelAudioState = make(chan int)
 var UpdateNowPlayingChannel = make(chan types.PlayingBook)
 
 // Holds data structures important to playing an audiobook
 var player Player
 
+const TickerDuration = 500 * time.Millisecond
+
+var Ticker *time.Ticker = time.NewTicker(TickerDuration)
+
 // Initiate Bass
 func init() {
+	Ticker.Stop()
 	go func() {
 		plugins := loadPlugins()
-		defer func(p []uint32) {
-			tearDown(p)
-		}(plugins)
 		initBass()
 		<-exitAudio
+		tearDown(plugins)
 	}()
 }
 
@@ -48,6 +53,7 @@ func tearDown(plugins []uint32) {
 		bass.PluginFree(p)
 	}
 	bass.Free()
+	os.Exit(0)
 }
 
 // Initialise Bass
@@ -56,6 +62,7 @@ func initBass() {
 	err.ShowError("Problem initiating bass", e)
 	err.PanicError(e)
 	bass.SetVolume(100)
+	BassInitiatedChan <- true
 }
 
 // Load pluggins needed by Bass
@@ -74,10 +81,6 @@ func loadPlugins() []uint32 {
 	return plugins
 }
 
-const TickerDuration = 500 * time.Millisecond
-
-var Ticker = time.NewTicker(TickerDuration)
-
 // Start listening to audio playing event and exit event
 func StartChannelListener(exitApp chan bool) {
 	player.updater = UpdateNowPlayingChannel
@@ -88,7 +91,7 @@ func StartChannelListener(exitApp chan bool) {
 			// case <-time.After(time.Second):
 			case <-Ticker.C:
 				updateUICurrentlyPlayingInfo()
-			case <-exitListener:
+			case <-ExitListener:
 				break RoutineLoop
 			}
 		}
@@ -129,6 +132,9 @@ func GetCurrentBookPlayingDuration(p types.PlayingBook) time.Duration {
 	}
 	return pos
 }
+func updateUIOnStop() {
+	player.updater <- player.currentBook
+}
 
 // Update the currently playing audio book information on the UI
 func updateUICurrentlyPlayingInfo() {
@@ -136,6 +142,9 @@ func updateUICurrentlyPlayingInfo() {
 		active, e := player.channel.IsActive()
 		err.ShowError("", e)
 		err.PanicError(e)
+
+		// We need active == bass.ACTIVE_STOPPED here in order to detect when
+		// file has reached end
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
 			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
 			err.ShowError("", e)
@@ -155,15 +164,11 @@ func updateUICurrentlyPlayingInfo() {
 			if posInWholeBook == wholeBookLength {
 				player.currentBook.Finished = true
 				Ticker.Stop()
-				ChannelAudioState <- Stopped
+				// ChannelAudioState <- Stopped
 			}
+
 			var d time.Duration = time.Duration(p * 1000000000)
 			player.currentBook.Position = time.Duration(d)
-		} else if active == bass.ACTIVE_STOPPED {
-			if !player.currentBook.Finished {
-				player.currentBook.Position = 0
-			}
-			ChannelAudioState <- Stopped
 		}
 		player.updater <- player.currentBook
 	}
@@ -173,8 +178,8 @@ type UpdateFolderArtCallBack func(playingBook types.PlayingBook)
 
 func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateFolderArtCallBack) {
 	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
-	player.currentBook = playingBook
 	stopPlayingIfPlaying(player.channel, player)
+	player.currentBook = playingBook
 
 	chapter := player.currentBook.CurrentChapter
 	e := loadAudioBookFile(player.currentBook.FullPath + buildconstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)

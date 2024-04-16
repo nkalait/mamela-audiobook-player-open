@@ -3,6 +3,7 @@ package audio
 import (
 	"mamela/err"
 	"mamela/types"
+	"time"
 
 	bass "github.com/pteich/gobass"
 )
@@ -11,14 +12,17 @@ type Player struct {
 	updater     chan types.PlayingBook
 	currentBook types.PlayingBook
 	channel     bass.Channel
+	playing     bool
 }
 
 func (p *Player) play() {
 	if p.channel != 0 {
 		e := p.channel.Play(false)
 		if e == nil {
+			// Ticker = time.NewTicker(TickerDuration)
 			Ticker.Reset(TickerDuration)
-			ChannelAudioState <- Playing
+			p.playing = true
+			// ChannelAudioState <- Playing
 		}
 		err.ShowError("", e)
 	}
@@ -33,7 +37,7 @@ func (p *Player) pause() {
 			if active == bass.ACTIVE_PLAYING {
 				e := p.channel.Pause()
 				Ticker.Stop()
-				ChannelAudioState <- Paused
+				// ChannelAudioState <- Paused
 				err.ShowError("", e)
 				err.PanicError(e)
 			}
@@ -47,11 +51,14 @@ func (p *Player) stop() {
 		if e != nil {
 			err.ShowError("", e)
 		} else {
+			Ticker.Stop()
+			p.playing = false
+			p.currentBook.Position = time.Duration(0)
 			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
-			updateUICurrentlyPlayingInfo()
-			Ticker.Stop()
-			ChannelAudioState <- Stopped
+			updateUIOnStop()
+			// updateUICurrentlyPlayingInfo()
+			// ChannelAudioState <- Stopped
 		}
 	}
 }

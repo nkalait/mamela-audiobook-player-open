@@ -3,7 +3,6 @@
 package storage
 
 import (
-	"log"
 	"mamela/buildconstraints"
 	"mamela/err"
 	"os"
@@ -23,5 +22,4 @@ func init() {
 	dir := strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "db"
 
 	storageFile = dir + buildconstraints.PathSeparator + "data.json"
-	log.Println("initiated storage: " + storageFile)
 }
