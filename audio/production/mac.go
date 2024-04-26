@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	ex, e := os.Executable()
-	if e != nil {
+	ex, err := os.Executable()
+	if err != nil {
 		merror.ShowError("", e)
 	}
 	exPath := filepath.Dir(ex)

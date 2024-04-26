@@ -29,8 +29,8 @@ func getBookImage(book types.Book) *tag.Picture {
 	if book.Metadata != nil && book.Metadata.Picture() != nil {
 		pic = book.Metadata.Picture()
 	} else if book.FolderArt != "" {
-		fileBytes, e := os.ReadFile(book.FullPath + buildConstraints.PathSeparator + book.FolderArt)
-		if e == nil {
+		fileBytes, err := os.ReadFile(book.FullPath + buildConstraints.PathSeparator + book.FolderArt)
+		if err == nil {
 			pic = &tag.Picture{Data: fileBytes}
 		}
 	}

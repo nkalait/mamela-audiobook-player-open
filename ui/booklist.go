@@ -46,9 +46,9 @@ func initBookList() *fyne.Container {
 
 func setBookListHeader() string {
 	if rootPath != "" {
-		books, e := getAudioBooks()
-		if e != nil {
-			merror.ShowError("An error has occurred", e)
+		books, err := getAudioBooks()
+		if err != nil {
+			merror.ShowError("An error has occurred", err)
 		}
 		if len(books) > 0 {
 			return "Loaded Books"
@@ -78,9 +78,9 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 func createFileDialogButton() *widget.Button {
 	icon := theme.FolderOpenIcon()
 	button := widget.NewButtonWithIcon("", icon, func() {
-		path, e := dialog.Directory().Title("Open root folder").Browse()
-		if e != nil {
-			dialog.Message(e.Error())
+		path, err := dialog.Directory().Title("Open root folder").Browse()
+		if err != nil {
+			dialog.Message(err.Error())
 		} else if path != "" {
 			storage.Data.Root = path
 			rootPath = storage.Data.Root
@@ -96,8 +96,8 @@ func createFileDialogButton() *widget.Button {
 func updateBookList(bookListVBox *fyne.Container) {
 	if rootPath != "" {
 		bookListVBox.Objects = bookListVBox.Objects[:0]
-		books, e := getAudioBooks()
-		if e == nil {
+		books, err := getAudioBooks()
+		if err == nil {
 			for _, v := range books {
 				bookTileLayout := NewMyListItemWidget(v)
 				bookListVBox.Add(bookTileLayout)
@@ -108,23 +108,23 @@ func updateBookList(bookListVBox *fyne.Container) {
 
 func getAudioBooks() ([]types.Book, error) {
 	var bookList = []types.Book{}
-	rootFolderEntries, e := os.ReadDir(rootPath)
-	if e != nil {
-		return nil, e
+	rootFolderEntries, err := os.ReadDir(rootPath)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, b := range rootFolderEntries {
 		isAValidAudioBook := false
 		if b.IsDir() {
 			var bookFullPath = rootPath + buildConstraints.PathSeparator + b.Name()
-			bookFolder, e := os.ReadDir(bookFullPath)
-			if e == nil {
+			bookFolder, err := os.ReadDir(bookFullPath)
+			if err == nil {
 				highestQuality := int64(0)
 				folderArt := ""
 				var book types.Book
 				for _, bookFile := range bookFolder {
-					i, e := bookFile.Info()
-					if e == nil {
+					i, err := bookFile.Info()
+					if err == nil {
 						if i.Mode().IsRegular() {
 							name := strings.ToLower(i.Name())
 							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(name)) {
@@ -177,12 +177,12 @@ func getFileTag(b types.Book) tag.Metadata {
 
 func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
 	length := float64(0)
-	c, e := bass.StreamCreateFile(fullPath+buildConstraints.PathSeparator+fileName, 0, bass.AsyncFile)
-	if e == nil {
-		bytesLen, e := c.GetLength(bass.POS_BYTE)
-		if e == nil {
-			t, e := c.Bytes2Seconds(bytesLen)
-			if e == nil {
+	c, err := bass.StreamCreateFile(fullPath+buildConstraints.PathSeparator+fileName, 0, bass.AsyncFile)
+	if err == nil {
+		bytesLen, err := c.GetLength(bass.POS_BYTE)
+		if err == nil {
+			t, err := c.Bytes2Seconds(bytesLen)
+			if err == nil {
 				length = t
 			}
 		}

@@ -27,13 +27,13 @@ func LoadStorageFile() {
 
 func checkStorageFile() bool {
 	fileExisted := false
-	if _, e := os.Stat(StorageFile); e == nil {
+	if _, err := os.Stat(StorageFile); err == nil {
 		fileExisted = true
-	} else if errors.Is(e, os.ErrNotExist) {
+	} else if errors.Is(err, os.ErrNotExist) {
 		// path/to/whatever does *not* exist
-		_, e := os.OpenFile(StorageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if e != nil {
-			log.Println(e)
+		_, err := os.OpenFile(StorageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 	go func() {
@@ -44,9 +44,9 @@ func checkStorageFile() bool {
 }
 
 func storageFileIsValid() bool {
-	file, e := os.ReadFile(StorageFile)
-	if e != nil {
-		merror.ShowError("There is a problem with the storage file", e)
+	file, err := os.ReadFile(StorageFile)
+	if err != nil {
+		merror.ShowError("There is a problem with the storage file", err)
 		return false
 	}
 	if !json.Valid(file) {
@@ -58,16 +58,16 @@ func storageFileIsValid() bool {
 
 func readJSONToken() {
 	var d Store
-	file, e := os.ReadFile(StorageFile)
-	merror.ShowError("Problem reading storage file", e)
-	merror.PanicError(e)
+	file, err := os.ReadFile(StorageFile)
+	merror.ShowError("Problem reading storage file", err)
+	merror.PanicError(err)
 	json.Unmarshal(file, &d)
 	Data.Root = d.Root
 }
 
 func SaveDataToStorageFile() {
 	jsonString, _ := json.Marshal(Data)
-	e := os.WriteFile(StorageFile, jsonString, os.ModePerm)
-	merror.ShowError("Problem writing to storage file", e)
-	merror.PanicError(e)
+	err := os.WriteFile(StorageFile, jsonString, os.ModePerm)
+	merror.ShowError("Problem writing to storage file", err)
+	merror.PanicError(err)
 }

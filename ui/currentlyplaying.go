@@ -203,9 +203,9 @@ func updateBookArt(pic *tag.Picture) {
 	if len(pic.Data) == 0 {
 		return
 	}
-	img, _, e := image.Decode(bytes.NewReader(pic.Data))
-	if e != nil {
-		merror.ShowError("Problem loading audio book image", e)
+	img, _, err := image.Decode(bytes.NewReader(pic.Data))
+	if err != nil {
+		merror.ShowError("Problem loading audio book image", err)
 		return
 	}
 	bookArt.Image = img

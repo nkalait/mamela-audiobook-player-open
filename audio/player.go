@@ -17,29 +17,29 @@ type Player struct {
 
 func (p *Player) play() {
 	if p.channel != 0 {
-		e := p.channel.Play(false)
-		if e == nil {
+		err := p.channel.Play(false)
+		if err == nil {
 			// Ticker = time.NewTicker(TickerDuration)
 			Ticker.Reset(TickerDuration)
 			p.playing = true
 			// ChannelAudioState <- Playing
 		}
-		merror.ShowError("", e)
+		merror.ShowError("", err)
 	}
 }
 
 func (p *Player) pause() {
 	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		if e != nil {
-			merror.ShowError("", e)
+		active, err := player.channel.IsActive()
+		if err != nil {
+			merror.ShowError("", err)
 		} else {
 			if active == bass.ACTIVE_PLAYING {
-				e := p.channel.Pause()
+				err := p.channel.Pause()
 				Ticker.Stop()
 				// ChannelAudioState <- Paused
-				merror.ShowError("", e)
-				merror.PanicError(e)
+				merror.ShowError("", err)
+				merror.PanicError(err)
 			}
 		}
 	}
@@ -47,9 +47,9 @@ func (p *Player) pause() {
 
 func (p *Player) stop() {
 	if p.channel != 0 {
-		e := p.channel.Stop()
-		if e != nil {
-			merror.ShowError("", e)
+		err := p.channel.Stop()
+		if err != nil {
+			merror.ShowError("", err)
 		} else {
 			Ticker.Stop()
 			p.playing = false
@@ -67,20 +67,20 @@ const fastForwardRewindAmount = 30
 
 func (p *Player) fastRewind() {
 	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		merror.ShowError("", e)
-		merror.PanicError(e)
+		active, err := player.channel.IsActive()
+		merror.ShowError("", err)
+		merror.PanicError(err)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
-			if e != nil {
-				merror.ShowError("", e)
+			bytePositionAmount, err := p.channel.Seconds2Bytes(fastForwardRewindAmount)
+			if err != nil {
+				merror.ShowError("", err)
 			} else {
-				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
-				if e == nil {
+				currentBytePosition, err := p.channel.GetPosition(bass.POS_BYTE)
+				if err == nil {
 					if currentBytePosition-bytePositionAmount < 0 {
 						if skipToPreviousFile(p) {
-							completeFileByteLength, e := p.channel.GetLength(bass.POS_BYTE)
-							if e == nil {
+							completeFileByteLength, err := p.channel.GetLength(bass.POS_BYTE)
+							if err == nil {
 								newPos := completeFileByteLength - bytePositionAmount
 								if currentBytePosition < bytePositionAmount {
 									deductBy := bytePositionAmount - currentBytePosition
@@ -103,20 +103,20 @@ func (p *Player) fastRewind() {
 
 func (p *Player) fastForward() {
 	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		merror.ShowError("", e)
-		merror.PanicError(e)
+		active, err := player.channel.IsActive()
+		merror.ShowError("", err)
+		merror.PanicError(err)
 		if active == bass.ACTIVE_PLAYING {
-			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
-			if e != nil {
-				merror.ShowError("", e)
+			bytePositionAmount, err := p.channel.Seconds2Bytes(fastForwardRewindAmount)
+			if err != nil {
+				merror.ShowError("", err)
 			} else {
-				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
-				if e != nil {
-					merror.ShowError("", e)
+				currentBytePosition, err := p.channel.GetPosition(bass.POS_BYTE)
+				if err != nil {
+					merror.ShowError("", err)
 				} else {
-					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
-					if e == nil {
+					byteLength, err := p.channel.GetLength(bass.POS_BYTE)
+					if err == nil {
 						if currentBytePosition+bytePositionAmount >= byteLength {
 							if !skipToNextFile(p, false) {
 								p.channel.SetPosition(byteLength, bass.POS_BYTE)

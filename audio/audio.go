@@ -58,21 +58,21 @@ func tearDown(plugins []uint32) {
 
 // Initialise Bass
 func initBass() {
-	e := bass.Init(-1, 44100, bass.DeviceStereo, 0, 0)
-	merror.ShowError("Problem initiating bass", e)
-	merror.PanicError(e)
+	err := bass.Init(-1, 44100, bass.DeviceStereo, 0, 0)
+	merror.ShowError("Problem initiating bass", err)
+	merror.PanicError(err)
 	bass.SetVolume(100)
 	BassInitiatedChan <- true
 }
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
-	merror.ShowError("Problem loading plugin", e)
-	merror.PanicError(e)
-	pluginLibbassOpus, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
-	merror.ShowError("Problem loading plugin", e)
-	merror.PanicError(e)
+	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	merror.ShowError("Problem loading plugin", err)
+	merror.PanicError(err)
+	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	merror.ShowError("Problem loading plugin", err)
+	merror.PanicError(err)
 
 	plugins := make([]uint32, 2)
 	plugins = append(plugins, pluginLibbassAac)
@@ -139,19 +139,19 @@ func updateUIOnStop() {
 // Update the currently playing audio book information on the UI
 func updateUICurrentlyPlayingInfo() {
 	if player.channel != 0 {
-		active, e := player.channel.IsActive()
-		merror.ShowError("", e)
-		merror.PanicError(e)
+		active, err := player.channel.IsActive()
+		merror.ShowError("", err)
+		merror.PanicError(err)
 
 		// We need active == bass.ACTIVE_STOPPED here in order to detect when
 		// file has reached end
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
-			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
-			merror.ShowError("", e)
-			merror.PanicError(e)
-			p, e := player.channel.Bytes2Seconds(bytePosition)
-			merror.ShowError("", e)
-			merror.PanicError(e)
+			bytePosition, err := player.channel.GetPosition(bass.POS_BYTE)
+			merror.ShowError("", err)
+			merror.PanicError(err)
+			p, err := player.channel.Bytes2Seconds(bytePosition)
+			merror.ShowError("", err)
+			merror.PanicError(err)
 
 			currentlyAt := player.currentBook.Position.Round(time.Second)
 			skipAt := time.Duration(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds * 1000000000).Round(time.Second)
@@ -177,13 +177,13 @@ func updateUICurrentlyPlayingInfo() {
 type UpdateFolderArtCallBack func(playingBook types.PlayingBook)
 
 func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateFolderArtCallBack) {
-	// c, e := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
+	// c, err := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
 	stopPlayingIfPlaying(player.channel, player)
 	player.currentBook = playingBook
 
 	chapter := player.currentBook.CurrentChapter
-	e := loadAudioBookFile(player.currentBook.FullPath + buildConstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
-	if e == nil {
+	err := loadAudioBookFile(player.currentBook.FullPath + buildConstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
+	if err == nil {
 		startPlaying()
 	}
 
@@ -195,9 +195,9 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 
 func stopPlayingIfPlaying(c bass.Channel, p Player) {
 	if c != 0 {
-		a, e := c.IsActive()
-		merror.ShowError("", e)
-		merror.PanicError(e)
+		a, err := c.IsActive()
+		merror.ShowError("", err)
+		merror.PanicError(err)
 		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
 			p.stop()
 		}
@@ -205,30 +205,30 @@ func stopPlayingIfPlaying(c bass.Channel, p Player) {
 }
 
 func loadAudioBookFile(fullPath string) error {
-	var e error = nil
-	player.channel, e = bass.StreamCreateFile(fullPath, 0, bass.AsyncFile)
-	if e != nil {
-		merror.ShowError("There seems to be a problem loading the the audio book file(s)", e)
+	var err error = nil
+	player.channel, err = bass.StreamCreateFile(fullPath, 0, bass.AsyncFile)
+	if err != nil {
+		merror.ShowError("There seems to be a problem loading the the audio book file(s)", err)
 	}
 
-	return e
+	return err
 }
 
 func startPlaying() error {
-	e := player.channel.SetPosition(0, bass.POS_BYTE)
-	if e != nil {
-		merror.ShowError("There seems to be a problem playing the the audio book file(s)", e)
+	err := player.channel.SetPosition(0, bass.POS_BYTE)
+	if err != nil {
+		merror.ShowError("There seems to be a problem playing the the audio book file(s)", err)
 	} else {
 		player.play()
 	}
-	return e
+	return err
 }
 
 func skipToNextFile(p *Player, forceSkip bool) bool {
 	skipped := false
 	if p.channel != 0 {
-		active, e := p.channel.IsActive()
-		merror.ShowError("Error skipping to next chapter", e)
+		active, err := p.channel.IsActive()
+		merror.ShowError("Error skipping to next chapter", err)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED || forceSkip {
 			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
@@ -246,8 +246,8 @@ func skipToNextFile(p *Player, forceSkip bool) bool {
 func skipToPreviousFile(p *Player) bool {
 	skipped := false
 	if p.channel != 0 {
-		active, e := p.channel.IsActive()
-		merror.ShowError("Error skipping to previous chapter", e)
+		active, err := p.channel.IsActive()
+		merror.ShowError("Error skipping to previous chapter", err)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
 			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
@@ -256,9 +256,9 @@ func skipToPreviousFile(p *Player) bool {
 					LoadAndPlay(p.currentBook, nil)
 					skipped = true
 				} else {
-					e = p.channel.SetPosition(0, bass.POS_BYTE)
-					if e != nil {
-						merror.ShowError("Error to skipping to start", e)
+					err = p.channel.SetPosition(0, bass.POS_BYTE)
+					if err != nil {
+						merror.ShowError("Error to skipping to start", err)
 					}
 				}
 			}
