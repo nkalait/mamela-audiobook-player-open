@@ -30,7 +30,6 @@ func checkStorageFile() bool {
 	if _, err := os.Stat(StorageFile); err == nil {
 		fileExisted = true
 	} else if errors.Is(err, os.ErrNotExist) {
-		// path/to/whatever does *not* exist
 		_, err := os.OpenFile(StorageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Println(err)
