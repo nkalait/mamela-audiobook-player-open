@@ -11,7 +11,7 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var libDir = "lib" + buildconstraints.PathSeparator + "mac"
+var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
 
 // Event listeners
 var (
@@ -67,10 +67,10 @@ func initBass() {
 
 // Load pluggins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, e := bass.PluginLoad(libDir+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, e := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
 	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
-	pluginLibbassOpus, e := bass.PluginLoad(libDir+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	pluginLibbassOpus, e := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
 	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
 
@@ -102,7 +102,7 @@ func StartChannelListener(exitApp chan bool) {
 }
 
 // Pad number below 10 with a zero
-func pad(i int) string {
+func Pad(i int) string {
 	s := fmt.Sprint(i)
 	if i < 10 {
 		s = "0" + fmt.Sprint(i)
@@ -116,9 +116,9 @@ func SecondsToTimeText(seconds time.Duration) string {
 	var m int = (int(seconds.Seconds()) / 60) % 60
 	var s int = int(seconds.Seconds()) % 60
 
-	sh := pad(h)
-	sm := pad(m)
-	ss := pad(s)
+	sh := Pad(h)
+	sm := Pad(m)
+	ss := Pad(s)
 
 	return sh + " : " + sm + " : " + ss
 }

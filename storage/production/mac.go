@@ -1,10 +1,11 @@
 //go:build prod_mac
 
-package audio
+package storage
 
 import (
 	"mamela/buildconstraints"
 	"mamela/err"
+	"mamela/storage"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,5 +19,8 @@ func init() {
 	exPath := filepath.Dir(ex)
 	exPathArr := strings.Split(exPath, buildconstraints.PathSeparator)
 	exPathArr = exPathArr[0 : len(exPathArr)-1]
-	libDir = strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "lib" + buildconstraints.PathSeparator + "mac"
+
+	dir := strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "db"
+
+	storage.StorageFile = dir + buildconstraints.PathSeparator + "data.json"
 }

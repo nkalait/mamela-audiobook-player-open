@@ -1,11 +1,11 @@
 package main
 
 import (
-	"mamela/audio"
+	"mamela/audio/tests"
 	"testing"
 )
 
 func TestPad(t *testing.T) {
-	audio.PadTestSingle(t)
-	audio.PadTestDouble(t)
+	tests.PadTestSingle(t)
+	tests.PadTestDouble(t)
 }

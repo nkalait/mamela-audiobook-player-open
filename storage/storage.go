@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var storageFile = "data.json"
+var StorageFile = "data.json"
 
 type Store struct {
 	Root string `json:"root"` // Rest of the fields should go here.
@@ -27,11 +27,11 @@ func LoadStorageFile() {
 
 func checkStorageFile() bool {
 	fileExisted := false
-	if _, e := os.Stat(storageFile); e == nil {
+	if _, e := os.Stat(StorageFile); e == nil {
 		fileExisted = true
 	} else if errors.Is(e, os.ErrNotExist) {
 		// path/to/whatever does *not* exist
-		_, e := os.OpenFile(storageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		_, e := os.OpenFile(StorageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if e != nil {
 			log.Println(e)
 		}
@@ -44,7 +44,7 @@ func checkStorageFile() bool {
 }
 
 func storageFileIsValid() bool {
-	file, e := os.ReadFile(storageFile)
+	file, e := os.ReadFile(StorageFile)
 	if e != nil {
 		err.ShowError("There is a problem with the storage file", e)
 		return false
@@ -58,7 +58,7 @@ func storageFileIsValid() bool {
 
 func readJSONToken() {
 	var d Store
-	file, e := os.ReadFile(storageFile)
+	file, e := os.ReadFile(StorageFile)
 	err.ShowError("Problem reading storage file", e)
 	err.PanicError(e)
 	json.Unmarshal(file, &d)
@@ -67,7 +67,7 @@ func readJSONToken() {
 
 func SaveDataToStorageFile() {
 	jsonString, _ := json.Marshal(Data)
-	e := os.WriteFile(storageFile, jsonString, os.ModePerm)
+	e := os.WriteFile(StorageFile, jsonString, os.ModePerm)
 	err.ShowError("Problem writing to storage file", e)
 	err.PanicError(e)
 }
