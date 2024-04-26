@@ -1,4 +1,4 @@
-package err
+package merror
 
 import (
 	"github.com/sqweek/dialog"

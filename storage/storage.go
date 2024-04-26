@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"mamela/err"
+	"mamela/merror"
 	"os"
 	"time"
 )
@@ -46,11 +46,11 @@ func checkStorageFile() bool {
 func storageFileIsValid() bool {
 	file, e := os.ReadFile(StorageFile)
 	if e != nil {
-		err.ShowError("There is a problem with the storage file", e)
+		merror.ShowError("There is a problem with the storage file", e)
 		return false
 	}
 	if !json.Valid(file) {
-		err.ShowError("The storage file does not seem to be valid", errors.New("invalid json"))
+		merror.ShowError("The storage file does not seem to be valid", errors.New("invalid json"))
 		return false
 	}
 	return true
@@ -59,8 +59,8 @@ func storageFileIsValid() bool {
 func readJSONToken() {
 	var d Store
 	file, e := os.ReadFile(StorageFile)
-	err.ShowError("Problem reading storage file", e)
-	err.PanicError(e)
+	merror.ShowError("Problem reading storage file", e)
+	merror.PanicError(e)
 	json.Unmarshal(file, &d)
 	Data.Root = d.Root
 }
@@ -68,6 +68,6 @@ func readJSONToken() {
 func SaveDataToStorageFile() {
 	jsonString, _ := json.Marshal(Data)
 	e := os.WriteFile(StorageFile, jsonString, os.ModePerm)
-	err.ShowError("Problem writing to storage file", e)
-	err.PanicError(e)
+	merror.ShowError("Problem writing to storage file", e)
+	merror.PanicError(e)
 }

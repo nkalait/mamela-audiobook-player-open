@@ -1,7 +1,7 @@
 package audio
 
 import (
-	"mamela/err"
+	"mamela/merror"
 	"mamela/types"
 	"time"
 
@@ -24,7 +24,7 @@ func (p *Player) play() {
 			p.playing = true
 			// ChannelAudioState <- Playing
 		}
-		err.ShowError("", e)
+		merror.ShowError("", e)
 	}
 }
 
@@ -32,14 +32,14 @@ func (p *Player) pause() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
 		if e != nil {
-			err.ShowError("", e)
+			merror.ShowError("", e)
 		} else {
 			if active == bass.ACTIVE_PLAYING {
 				e := p.channel.Pause()
 				Ticker.Stop()
 				// ChannelAudioState <- Paused
-				err.ShowError("", e)
-				err.PanicError(e)
+				merror.ShowError("", e)
+				merror.PanicError(e)
 			}
 		}
 	}
@@ -49,7 +49,7 @@ func (p *Player) stop() {
 	if p.channel != 0 {
 		e := p.channel.Stop()
 		if e != nil {
-			err.ShowError("", e)
+			merror.ShowError("", e)
 		} else {
 			Ticker.Stop()
 			p.playing = false
@@ -68,12 +68,12 @@ const fastForwardRewindAmount = 30
 func (p *Player) fastRewind() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
-		err.ShowError("", e)
-		err.PanicError(e)
+		merror.ShowError("", e)
+		merror.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if e != nil {
-				err.ShowError("", e)
+				merror.ShowError("", e)
 			} else {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
 				if e == nil {
@@ -104,16 +104,16 @@ func (p *Player) fastRewind() {
 func (p *Player) fastForward() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
-		err.ShowError("", e)
-		err.PanicError(e)
+		merror.ShowError("", e)
+		merror.PanicError(e)
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, e := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if e != nil {
-				err.ShowError("", e)
+				merror.ShowError("", e)
 			} else {
 				currentBytePosition, e := p.channel.GetPosition(bass.POS_BYTE)
 				if e != nil {
-					err.ShowError("", e)
+					merror.ShowError("", e)
 				} else {
 					byteLength, e := p.channel.GetLength(bass.POS_BYTE)
 					if e == nil {

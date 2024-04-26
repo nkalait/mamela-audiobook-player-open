@@ -3,7 +3,7 @@ package audio
 import (
 	"fmt"
 	"mamela/buildConstraints"
-	"mamela/err"
+	"mamela/merror"
 	"mamela/types"
 	"os"
 	"time"
@@ -59,8 +59,8 @@ func tearDown(plugins []uint32) {
 // Initialise Bass
 func initBass() {
 	e := bass.Init(-1, 44100, bass.DeviceStereo, 0, 0)
-	err.ShowError("Problem initiating bass", e)
-	err.PanicError(e)
+	merror.ShowError("Problem initiating bass", e)
+	merror.PanicError(e)
 	bass.SetVolume(100)
 	BassInitiatedChan <- true
 }
@@ -68,11 +68,11 @@ func initBass() {
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
 	pluginLibbassAac, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
-	err.ShowError("Problem loading plugin", e)
-	err.PanicError(e)
+	merror.ShowError("Problem loading plugin", e)
+	merror.PanicError(e)
 	pluginLibbassOpus, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
-	err.ShowError("Problem loading plugin", e)
-	err.PanicError(e)
+	merror.ShowError("Problem loading plugin", e)
+	merror.PanicError(e)
 
 	plugins := make([]uint32, 2)
 	plugins = append(plugins, pluginLibbassAac)
@@ -140,18 +140,18 @@ func updateUIOnStop() {
 func updateUICurrentlyPlayingInfo() {
 	if player.channel != 0 {
 		active, e := player.channel.IsActive()
-		err.ShowError("", e)
-		err.PanicError(e)
+		merror.ShowError("", e)
+		merror.PanicError(e)
 
 		// We need active == bass.ACTIVE_STOPPED here in order to detect when
 		// file has reached end
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_STOPPED {
 			bytePosition, e := player.channel.GetPosition(bass.POS_BYTE)
-			err.ShowError("", e)
-			err.PanicError(e)
+			merror.ShowError("", e)
+			merror.PanicError(e)
 			p, e := player.channel.Bytes2Seconds(bytePosition)
-			err.ShowError("", e)
-			err.PanicError(e)
+			merror.ShowError("", e)
+			merror.PanicError(e)
 
 			currentlyAt := player.currentBook.Position.Round(time.Second)
 			skipAt := time.Duration(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds * 1000000000).Round(time.Second)
@@ -196,8 +196,8 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 func stopPlayingIfPlaying(c bass.Channel, p Player) {
 	if c != 0 {
 		a, e := c.IsActive()
-		err.ShowError("", e)
-		err.PanicError(e)
+		merror.ShowError("", e)
+		merror.PanicError(e)
 		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
 			p.stop()
 		}
@@ -208,7 +208,7 @@ func loadAudioBookFile(fullPath string) error {
 	var e error = nil
 	player.channel, e = bass.StreamCreateFile(fullPath, 0, bass.AsyncFile)
 	if e != nil {
-		err.ShowError("There seems to be a problem loading the the audio book file(s)", e)
+		merror.ShowError("There seems to be a problem loading the the audio book file(s)", e)
 	}
 
 	return e
@@ -217,7 +217,7 @@ func loadAudioBookFile(fullPath string) error {
 func startPlaying() error {
 	e := player.channel.SetPosition(0, bass.POS_BYTE)
 	if e != nil {
-		err.ShowError("There seems to be a problem playing the the audio book file(s)", e)
+		merror.ShowError("There seems to be a problem playing the the audio book file(s)", e)
 	} else {
 		player.play()
 	}
@@ -228,7 +228,7 @@ func skipToNextFile(p *Player, forceSkip bool) bool {
 	skipped := false
 	if p.channel != 0 {
 		active, e := p.channel.IsActive()
-		err.ShowError("Error skipping to next chapter", e)
+		merror.ShowError("Error skipping to next chapter", e)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED || forceSkip {
 			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
@@ -247,7 +247,7 @@ func skipToPreviousFile(p *Player) bool {
 	skipped := false
 	if p.channel != 0 {
 		active, e := p.channel.IsActive()
-		err.ShowError("Error skipping to previous chapter", e)
+		merror.ShowError("Error skipping to previous chapter", e)
 		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
 			numChapters := len(p.currentBook.Chapters)
 			if numChapters > 0 {
@@ -258,7 +258,7 @@ func skipToPreviousFile(p *Player) bool {
 				} else {
 					e = p.channel.SetPosition(0, bass.POS_BYTE)
 					if e != nil {
-						err.ShowError("Error to skipping to start", e)
+						merror.ShowError("Error to skipping to start", e)
 					}
 				}
 			}

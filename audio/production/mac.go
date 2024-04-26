@@ -5,7 +5,7 @@ package production
 import (
 	"mamela/audio"
 	"mamela/buildConstraints"
-	"mamela/err"
+	"mamela/merror"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,7 +14,7 @@ import (
 func init() {
 	ex, e := os.Executable()
 	if e != nil {
-		err.ShowError("", e)
+		merror.ShowError("", e)
 	}
 	exPath := filepath.Dir(ex)
 	exPathArr := strings.Split(exPath, buildConstraints.PathSeparator)

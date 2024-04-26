@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"image"
 	"mamela/audio"
-	"mamela/err"
+	"mamela/merror"
 	"mamela/types"
 	"math"
 	"time"
@@ -205,7 +205,7 @@ func updateBookArt(pic *tag.Picture) {
 	}
 	img, _, e := image.Decode(bytes.NewReader(pic.Data))
 	if e != nil {
-		err.ShowError("Problem loading audio book image", e)
+		merror.ShowError("Problem loading audio book image", e)
 		return
 	}
 	bookArt.Image = img

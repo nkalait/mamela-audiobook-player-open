@@ -3,8 +3,8 @@ package ui
 import (
 	"image/color"
 	"mamela/buildConstraints"
-	"mamela/err"
 	"mamela/filetypes"
+	"mamela/merror"
 	"mamela/storage"
 	"mamela/types"
 	"os"
@@ -48,7 +48,7 @@ func setBookListHeader() string {
 	if rootPath != "" {
 		books, e := getAudioBooks()
 		if e != nil {
-			err.ShowError("An error has occurred", e)
+			merror.ShowError("An error has occurred", e)
 		}
 		if len(books) > 0 {
 			return "Loaded Books"
