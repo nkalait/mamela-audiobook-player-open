@@ -23,6 +23,7 @@ tester
 go.work
 
 *mamela_audiobook_player*
+*.app
 /**/app
 
 /**/audio books
