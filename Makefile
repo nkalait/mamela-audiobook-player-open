@@ -1,8 +1,10 @@
 BINARY_NAME=mamela_audiobook_player
 LIB=app/lib/mac
-PACK_LIB_MAC=mamela.app/Contents/lib/mac
-APP_DIR_MAC=mamela.app/Contents/MacOS
-PACK_DB_DIR_MAC=mamela.app/Contents/db
+
+PACK_APP_NAME_MAC=Mamela.app
+PACK_LIB_MAC=${PACK_APP_NAME_MAC}/Contents/lib/mac
+APP_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/MacOS
+PACK_DB_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/db
 
 .DEFAULT_GOAL := run 
 
@@ -21,7 +23,8 @@ build:
 	cd app && ./${BINARY_NAME}-darwin
 
 pack_mac:
-	fyne package -os darwin -appID mamela.co.ls --tags prod_mac --release
+	fyne package -os darwin -appID mamela.co.ls --tags prod_mac --release 
+	mv mamela.app ${PACK_APP_NAME_MAC}
 	mkdir -p ${PACK_LIB_MAC}
 	cp lib/mac/libbass.dylib ${PACK_LIB_MAC}
 	cp lib/mac/libbass_aac.dylib ${PACK_LIB_MAC}
