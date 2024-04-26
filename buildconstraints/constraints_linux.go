@@ -1,5 +1,5 @@
 //go:build linux
 
-package buildconstraints
+package buildConstraints
 
 const PathSeparator = "/"

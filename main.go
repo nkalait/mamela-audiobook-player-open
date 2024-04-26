@@ -11,7 +11,7 @@ import (
 
 // Basically, this app plays audio books.
 // There is one root folder in which there are other folders.
-// Each folder under the root folder respresents a single audio book.
+// Each folder under the root folder represents a single audio book.
 // Each audio book folder should contain playable audio files, each file would be a chapter.
 
 // The name of the app
@@ -20,7 +20,7 @@ const appLabel = "Mamela"
 // The root folder where audio books will be place, this variable here is for testing only
 var rootPath string = ""
 
-// Carries info about currently playing audiobook
+// Carries info about currently playing audio book
 
 // Listens to exit app event
 var exitApp = make(chan bool)

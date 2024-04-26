@@ -6,13 +6,13 @@ import (
 	"github.com/dhowden/tag"
 )
 
-// for file by file based chapters, lentgh
+// Chapter data
 type Chapter struct {
 	LengthInSeconds float64
 	FileName        string
 }
 
-// An audiobook
+// An audio book
 type Book struct {
 	Title             string
 	FullPath          string
@@ -22,7 +22,7 @@ type Book struct {
 	Metadata          tag.Metadata
 }
 
-// An audiobook that is currently playing
+// An audio book that is currently playing
 type PlayingBook struct {
 	Book
 	CurrentChapter int           // Currently playing chapter

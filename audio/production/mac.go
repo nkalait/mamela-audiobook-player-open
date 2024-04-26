@@ -4,7 +4,7 @@ package production
 
 import (
 	"mamela/audio"
-	"mamela/buildconstraints"
+	"mamela/buildConstraints"
 	"mamela/err"
 	"os"
 	"path/filepath"
@@ -17,7 +17,7 @@ func init() {
 		err.ShowError("", e)
 	}
 	exPath := filepath.Dir(ex)
-	exPathArr := strings.Split(exPath, buildconstraints.PathSeparator)
+	exPathArr := strings.Split(exPath, buildConstraints.PathSeparator)
 	exPathArr = exPathArr[0 : len(exPathArr)-1]
-	audio.LibDir = strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "lib" + buildconstraints.PathSeparator + "mac"
+	audio.LibDir = strings.Join(exPathArr, buildConstraints.PathSeparator) + buildConstraints.PathSeparator + "lib" + buildConstraints.PathSeparator + "mac"
 }

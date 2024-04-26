@@ -2,7 +2,7 @@ package audio
 
 import (
 	"fmt"
-	"mamela/buildconstraints"
+	"mamela/buildConstraints"
 	"mamela/err"
 	"mamela/types"
 	"os"
@@ -11,7 +11,7 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
+var LibDir = "lib" + buildConstraints.PathSeparator + "mac"
 
 // Event listeners
 var (
@@ -29,7 +29,7 @@ var (
 // var ChannelAudioState = make(chan int)
 var UpdateNowPlayingChannel = make(chan types.PlayingBook)
 
-// Holds data structures important to playing an audiobook
+// Holds data structures important to playing an audio book
 var player Player
 
 const TickerDuration = 500 * time.Millisecond
@@ -47,7 +47,7 @@ func init() {
 	}()
 }
 
-// Unload loadded Bass plugins and free all resources used by Bass
+// Unload loaded Bass plugins and free all resources used by Bass
 func tearDown(plugins []uint32) {
 	for _, p := range plugins {
 		bass.PluginFree(p)
@@ -65,12 +65,12 @@ func initBass() {
 	BassInitiatedChan <- true
 }
 
-// Load pluggins needed by Bass
+// Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, e := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
 	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
-	pluginLibbassOpus, e := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	pluginLibbassOpus, e := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
 	err.ShowError("Problem loading plugin", e)
 	err.PanicError(e)
 
@@ -182,7 +182,7 @@ func LoadAndPlay(playingBook types.PlayingBook, updaterFolderArtCallback UpdateF
 	player.currentBook = playingBook
 
 	chapter := player.currentBook.CurrentChapter
-	e := loadAudioBookFile(player.currentBook.FullPath + buildconstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
+	e := loadAudioBookFile(player.currentBook.FullPath + buildConstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
 	if e == nil {
 		startPlaying()
 	}

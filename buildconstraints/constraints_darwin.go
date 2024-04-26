@@ -1,5 +1,5 @@
 //go:build darwin
 
-package buildconstraints
+package buildConstraints
 
 const PathSeparator string = "/"

@@ -3,7 +3,7 @@
 package storage
 
 import (
-	"mamela/buildconstraints"
+	"mamela/buildConstraints"
 	"mamela/err"
 	"mamela/storage"
 	"os"
@@ -17,10 +17,10 @@ func init() {
 		err.ShowError("", e)
 	}
 	exPath := filepath.Dir(ex)
-	exPathArr := strings.Split(exPath, buildconstraints.PathSeparator)
+	exPathArr := strings.Split(exPath, buildConstraints.PathSeparator)
 	exPathArr = exPathArr[0 : len(exPathArr)-1]
 
-	dir := strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "db"
+	dir := strings.Join(exPathArr, buildConstraints.PathSeparator) + buildConstraints.PathSeparator + "db"
 
-	storage.StorageFile = dir + buildconstraints.PathSeparator + "data.json"
+	storage.StorageFile = dir + buildConstraints.PathSeparator + "data.json"
 }

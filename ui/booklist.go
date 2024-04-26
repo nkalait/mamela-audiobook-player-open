@@ -2,7 +2,7 @@ package ui
 
 import (
 	"image/color"
-	"mamela/buildconstraints"
+	"mamela/buildConstraints"
 	"mamela/err"
 	"mamela/filetypes"
 	"mamela/storage"
@@ -23,10 +23,10 @@ import (
 	"github.com/sqweek/dialog"
 )
 
-// Listens to events about changes to audiobooks root folder
+// Listens to events about changes to audio books root folder
 var updateBookListChannel = make(chan bool)
 
-// Initialise part of the UI that lists audiobooks and listen to update events
+// Initialise part of the UI that lists audio books and listen to update events
 func initBookList() *fyne.Container {
 	bookListVBox := container.New(layout.NewVBoxLayout())
 	bookListContainer := initBookPane(bookListVBox)
@@ -48,7 +48,7 @@ func setBookListHeader() string {
 	if rootPath != "" {
 		books, e := getAudioBooks()
 		if e != nil {
-			err.ShowError("An error has occured", e)
+			err.ShowError("An error has occurred", e)
 		}
 		if len(books) > 0 {
 			return "Loaded Books"
@@ -92,7 +92,7 @@ func createFileDialogButton() *widget.Button {
 	return button
 }
 
-// Update the part of UI showing list of audiobooks
+// Update the part of UI showing list of audio books
 func updateBookList(bookListVBox *fyne.Container) {
 	if rootPath != "" {
 		bookListVBox.Objects = bookListVBox.Objects[:0]
@@ -116,7 +116,7 @@ func getAudioBooks() ([]types.Book, error) {
 	for _, b := range rootFolderEntries {
 		isAValidAudioBook := false
 		if b.IsDir() {
-			var bookFullPath = rootPath + buildconstraints.PathSeparator + b.Name()
+			var bookFullPath = rootPath + buildConstraints.PathSeparator + b.Name()
 			bookFolder, e := os.ReadDir(bookFullPath)
 			if e == nil {
 				highestQuality := int64(0)
@@ -160,7 +160,7 @@ func getAudioBooks() ([]types.Book, error) {
 }
 
 func getBookFile(b types.Book) *os.File {
-	path := b.FullPath + buildconstraints.PathSeparator + b.Chapters[0].FileName
+	path := b.FullPath + buildConstraints.PathSeparator + b.Chapters[0].FileName
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	return f
 }
@@ -177,7 +177,7 @@ func getFileTag(b types.Book) tag.Metadata {
 
 func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
 	length := float64(0)
-	c, e := bass.StreamCreateFile(fullPath+buildconstraints.PathSeparator+fileName, 0, bass.AsyncFile)
+	c, e := bass.StreamCreateFile(fullPath+buildConstraints.PathSeparator+fileName, 0, bass.AsyncFile)
 	if e == nil {
 		bytesLen, e := c.GetLength(bass.POS_BYTE)
 		if e == nil {
