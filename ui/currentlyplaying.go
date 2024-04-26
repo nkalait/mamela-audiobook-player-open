@@ -56,28 +56,6 @@ func createPlayingLayout() *fyne.Container {
 			updatePlaying(playingBook)
 		}
 	}()
-
-	// go func() {
-	// 	for playingState := range audio.ChannelAudioState {
-	// 		switch playingState {
-	// 		case audio.Stopped:
-	// 			playerButtonStop.Importance = widget.HighImportance
-	// 			playerButtonPlay.Importance = widget.MediumImportance
-	// 			playerButtonPause.Importance = widget.MediumImportance
-	// 		case audio.Paused:
-	// 			playerButtonStop.Importance = widget.MediumImportance
-	// 			playerButtonPlay.Importance = widget.MediumImportance
-	// 			playerButtonPause.Importance = widget.HighImportance
-	// 		case audio.Playing:
-	// 			playerButtonStop.Importance = widget.MediumImportance
-	// 			playerButtonPlay.Importance = widget.HighImportance
-	// 			playerButtonPause.Importance = widget.MediumImportance
-	// 		}
-	// 		playerButtonStop.Refresh()
-	// 		playerButtonPlay.Refresh()
-	// 		playerButtonPause.Refresh()
-	// 	}
-	// }()
 	return playingVBox
 }
 

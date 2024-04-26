@@ -2,7 +2,6 @@ package merror
 
 import (
 	"github.com/sqweek/dialog"
-	// "fyne.io/fyne/v2/dialog"
 )
 
 func PanicError(e error) {

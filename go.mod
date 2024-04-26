@@ -8,10 +8,9 @@ require (
 	golang.org/x/text v0.14.0
 )
 
-require github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
-
 require (
 	fyne.io/systray v1.10.1-0.20231115130155-104f5ef7839e // indirect
+	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dhowden/tag v0.0.0-20240122214204-713ab0e94639
 	github.com/fredbi/uri v1.1.0 // indirect
