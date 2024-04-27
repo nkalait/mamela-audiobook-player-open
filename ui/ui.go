@@ -10,9 +10,6 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
-// Path to folder where audio books are stored
-var rootPath = ""
-
 var (
 	// colourDarkThemeBlackLight   = color.RGBA{38, 38, 38, 255}
 	colourDarkThemeBlackLighter = color.RGBA{51, 51, 51, 255}
@@ -28,8 +25,7 @@ var (
 	MainWindow fyne.Window
 )
 
-func BuildUI(appLabel string, rootP string) {
-	rootPath = rootP
+func BuildUI(appLabel string) {
 	MamelaApp = app.New()
 	// MamelaApp.Settings().SetTheme(theme.DarkTheme())
 
@@ -58,6 +54,6 @@ func BuildUI(appLabel string, rootP string) {
 	// body := container.NewStack(bodyBg, bodyParts)
 	main := container.NewGridWithColumns(1, bodyParts)
 	MainWindow.SetContent(main)
-	MainWindow.Resize(fyne.NewSize(800, 400))
+	MainWindow.Resize(fyne.NewSize(800, 600))
 	MainWindow.ShowAndRun()
 }

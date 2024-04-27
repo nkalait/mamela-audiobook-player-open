@@ -5,6 +5,7 @@ import (
 	"image"
 	"mamela/audio"
 	"mamela/buildConstraints"
+	"mamela/storage"
 	"mamela/types"
 	"os"
 
@@ -29,7 +30,7 @@ func getBookImage(book types.Book) *tag.Picture {
 	if book.Metadata != nil && book.Metadata.Picture() != nil {
 		pic = book.Metadata.Picture()
 	} else if book.FolderArt != "" {
-		fileBytes, err := os.ReadFile(book.FullPath + buildConstraints.PathSeparator + book.FolderArt)
+		fileBytes, err := os.ReadFile(storage.Data.Root + buildConstraints.PathSeparator + book.Path + buildConstraints.PathSeparator + book.FolderArt)
 		if err == nil {
 			pic = &tag.Picture{Data: fileBytes}
 		}
@@ -61,8 +62,9 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	}
 
 	callback := func() {
-		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false, Position: 0}
-		audio.LoadAndPlay(playingBook, funcChanFolderArtUpdaterCallBack)
+		// var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false, Position: 0}
+		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
+		audio.LoadAndPlay(playingBook, true, funcChanFolderArtUpdaterCallBack)
 	}
 
 	if bookImage != nil {

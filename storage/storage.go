@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"mamela/merror"
+	"mamela/types"
 	"os"
 	"time"
 )
@@ -14,14 +15,16 @@ import (
 var StorageFile = "data.json"
 
 type Store struct {
-	Root string `json:"root"` // Rest of the fields should go here.
+	Root              string       `json:"root"` // Rest of the fields should go here.
+	BookList          []types.Book `json:"books"`
+	CurrentBookFolder string       `json:"current_book_folder"`
 }
 
 var Data Store = Store{}
 
 func LoadStorageFile() {
 	if checkStorageFile() {
-		readJSONToken()
+		readJSONFile()
 	}
 }
 
@@ -55,18 +58,29 @@ func storageFileIsValid() bool {
 	return true
 }
 
-func readJSONToken() {
-	var d Store
+func readJSONFile() {
 	file, err := os.ReadFile(StorageFile)
 	merror.ShowError("Problem reading storage file", err)
 	merror.PanicError(err)
-	json.Unmarshal(file, &d)
-	Data.Root = d.Root
+	json.Unmarshal(file, &Data)
 }
 
 func SaveDataToStorageFile() {
-	jsonString, _ := json.Marshal(Data)
-	err := os.WriteFile(StorageFile, jsonString, os.ModePerm)
+	jsonString, err := json.Marshal(Data)
+	if err != nil {
+		merror.ShowError("Internal error, could not marshal data", err)
+		return
+	}
+	err = os.WriteFile(StorageFile, jsonString, os.ModePerm)
 	merror.ShowError("Problem writing to storage file", err)
-	merror.PanicError(err)
+}
+
+func SaveBookListToStorageFile(bookList []types.Book) {
+	Data.BookList = bookList
+	SaveDataToStorageFile()
+}
+
+func UpdateCurrentBook(bookPath string) {
+	Data.CurrentBookFolder = bookPath
+	SaveDataToStorageFile()
 }

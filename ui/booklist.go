@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"mamela/audio"
 	"mamela/buildConstraints"
 	"mamela/filetypes"
 	"mamela/merror"
@@ -23,20 +24,17 @@ import (
 	"github.com/sqweek/dialog"
 )
 
-// Listens to events about changes to audio books root folder
-var updateBookListChannel = make(chan bool)
-
 // Initialise part of the UI that lists audio books and listen to update events
 func initBookList() *fyne.Container {
 	bookListVBox := container.New(layout.NewVBoxLayout())
 	bookListContainer := initBookPane(bookListVBox)
-	updateBookList(bookListVBox)
+	updateBookList(bookListVBox, false)
 
 	// Listen to book list update events
 	go func() {
-		for update := range updateBookListChannel {
+		for update := range audio.UpdateBookListChannel {
 			if update {
-				updateBookList(bookListVBox)
+				updateBookList(bookListVBox, true)
 			}
 		}
 	}()
@@ -45,14 +43,8 @@ func initBookList() *fyne.Container {
 }
 
 func setBookListHeader() string {
-	if rootPath != "" {
-		books, err := getAudioBooks()
-		if err != nil {
-			merror.ShowError("An error has occurred", err)
-		}
-		if len(books) > 0 {
-			return "Loaded Books"
-		}
+	if len(storage.Data.BookList) > 0 {
+		return "Loaded Books"
 	}
 	// TODO find a better we of doing the padding below
 	return "Load Books     "
@@ -83,9 +75,8 @@ func createFileDialogButton() *widget.Button {
 			dialog.Message(err.Error())
 		} else if path != "" {
 			storage.Data.Root = path
-			rootPath = storage.Data.Root
 			storage.SaveDataToStorageFile()
-			updateBookListChannel <- true
+			audio.UpdateBookListChannel <- true
 		}
 
 	})
@@ -93,30 +84,31 @@ func createFileDialogButton() *widget.Button {
 }
 
 // Update the part of UI showing list of audio books
-func updateBookList(bookListVBox *fyne.Container) {
-	if rootPath != "" {
+func updateBookList(bookListVBox *fyne.Container, force bool) {
+	if storage.Data.Root != "" {
+		if len(storage.Data.BookList) == 0 || force {
+			parseRootFolder()
+		}
 		bookListVBox.Objects = bookListVBox.Objects[:0]
-		books, err := getAudioBooks()
-		if err == nil {
-			for _, v := range books {
-				bookTileLayout := NewMyListItemWidget(v)
-				bookListVBox.Add(bookTileLayout)
-			}
+		for _, v := range storage.Data.BookList {
+			bookTileLayout := NewMyListItemWidget(v)
+			bookListVBox.Add(bookTileLayout)
 		}
 	}
 }
 
-func getAudioBooks() ([]types.Book, error) {
+func parseRootFolder() {
 	var bookList = []types.Book{}
-	rootFolderEntries, err := os.ReadDir(rootPath)
+	rootFolderEntries, err := os.ReadDir(storage.Data.Root)
 	if err != nil {
-		return nil, err
+		merror.ShowError("Could not read root folder", err)
+		return
 	}
 
-	for _, b := range rootFolderEntries {
+	for _, folder := range rootFolderEntries {
 		isAValidAudioBook := false
-		if b.IsDir() {
-			var bookFullPath = rootPath + buildConstraints.PathSeparator + b.Name()
+		if folder.IsDir() {
+			bookFullPath := storage.Data.Root + buildConstraints.PathSeparator + folder.Name()
 			bookFolder, err := os.ReadDir(bookFullPath)
 			if err == nil {
 				highestQuality := int64(0)
@@ -146,8 +138,8 @@ func getAudioBooks() ([]types.Book, error) {
 				}
 
 				if isAValidAudioBook {
-					book.Title = b.Name()
-					book.FullPath = bookFullPath
+					book.Title = folder.Name()
+					book.Path = folder.Name()
 					book.FolderArt = folderArt
 					book.FullLengthSeconds = getFullBookLengthSeconds(book.Chapters)
 					book.Metadata = getFileTag(book)
@@ -156,11 +148,11 @@ func getAudioBooks() ([]types.Book, error) {
 			}
 		}
 	}
-	return bookList, nil
+	storage.SaveBookListToStorageFile(bookList)
 }
 
 func getBookFile(b types.Book) *os.File {
-	path := b.FullPath + buildConstraints.PathSeparator + b.Chapters[0].FileName
+	path := storage.Data.Root + buildConstraints.PathSeparator + b.Path + buildConstraints.PathSeparator + b.Chapters[0].FileName
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	return f
 }

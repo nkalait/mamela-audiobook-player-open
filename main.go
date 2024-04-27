@@ -17,11 +17,6 @@ import (
 // The name of the app
 const appLabel = "Mamela"
 
-// The root folder where audio books will be place, this variable here is for testing only
-var rootPath string = ""
-
-// Carries info about currently playing audio book
-
 // Listens to exit app event
 var exitApp = make(chan bool)
 
@@ -40,7 +35,6 @@ func onExit() {
 func main() {
 	// defer onExit()
 	storage.LoadStorageFile()
-	rootPath = storage.Data.Root
 	go func() {
 		<-exitApp
 		onExit()
@@ -51,7 +45,7 @@ func main() {
 	}()
 	go handleSignals()
 	<-audio.BassInitiatedChan
-	ui.BuildUI(appLabel, rootPath)
+	ui.BuildUI(appLabel)
 	audio.ExitListener <- true
 	<-exitApp
 }

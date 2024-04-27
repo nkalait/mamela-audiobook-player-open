@@ -1,6 +1,12 @@
+- load last audio book that was playing on start up
+- FIX BUG, when user clicks skipPrevious; if not at the beginning of file the go to beginning of the file, if withing 3 seconds of the beginning of a file then go the previous file
+- Add refresh button to refresh the list of books in a directory
+- Show working animation when loading a new directory
+- Add a scrubber
+- Highlight currently playing book
+- stop playing and clear storage.Data.BookList ???
+- folder art for files with an imbedded images don't show up if not forcing update
 - test code coverage
 - FINISH UP WORKING WITH DARK AND LIGHT THEMES
-- load last audio book that was playing on start up
-- start playing where user stopped for each audio book
 - for files with chapter information embedded in them, allow skipping to next/previous chapter (will use ffmpeg for now)
 - have a stop, shutdown timer

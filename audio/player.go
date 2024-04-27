@@ -2,6 +2,7 @@ package audio
 
 import (
 	"mamela/merror"
+	"mamela/storage"
 	"mamela/types"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 )
 
 type Player struct {
-	updater     chan types.PlayingBook
 	currentBook types.PlayingBook
 	channel     bass.Channel
 	playing     bool
@@ -19,10 +19,10 @@ func (p *Player) play() {
 	if p.channel != 0 {
 		err := p.channel.Play(false)
 		if err == nil {
-			// Ticker = time.NewTicker(TickerDuration)
-			Ticker.Reset(TickerDuration)
+			UIUpdateTicker.Reset(PlayingBookTickerDuration)
+			CurrentBookPositionUpdateTicker.Reset(CurrentBookPositionTickerDuration)
 			p.playing = true
-			// ChannelAudioState <- Playing
+			storage.UpdateCurrentBook(p.currentBook.Path)
 		}
 		merror.ShowError("", err)
 	}
@@ -36,8 +36,8 @@ func (p *Player) pause() {
 		} else {
 			if active == bass.ACTIVE_PLAYING {
 				err := p.channel.Pause()
-				Ticker.Stop()
-				// ChannelAudioState <- Paused
+				UIUpdateTicker.Stop()
+				CurrentBookPositionUpdateTicker.Stop()
 				merror.ShowError("", err)
 				merror.PanicError(err)
 			}
@@ -51,12 +51,14 @@ func (p *Player) stop() {
 		if err != nil {
 			merror.ShowError("", err)
 		} else {
-			Ticker.Stop()
+			UIUpdateTicker.Stop()
+			CurrentBookPositionUpdateTicker.Stop()
 			p.playing = false
 			p.currentBook.Position = time.Duration(0)
 			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUIOnStop()
+			saveCurrentPlayingBookPositionToDisk()
 			// updateUICurrentlyPlayingInfo()
 			// ChannelAudioState <- Stopped
 		}
