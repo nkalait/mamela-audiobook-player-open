@@ -15,9 +15,9 @@ import (
 var StorageFile = "data.json"
 
 type Store struct {
-	Root              string       `json:"root"` // Rest of the fields should go here.
-	BookList          []types.Book `json:"books"`
-	CurrentBookFolder string       `json:"current_book_folder"`
+	Root              string       `json:"root"`                // Folder where audio book folders can be found
+	BookList          []types.Book `json:"books"`               // Audio books in the root folder
+	CurrentBookFolder string       `json:"current_book_folder"` // Currently playing audio book
 }
 
 var Data Store = Store{}
