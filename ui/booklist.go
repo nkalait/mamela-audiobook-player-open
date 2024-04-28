@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -93,7 +94,23 @@ func updateBookList(bookListVBox *fyne.Container, force bool) {
 		for _, v := range storage.Data.BookList {
 			bookTileLayout := NewMyListItemWidget(v)
 			bookListVBox.Add(bookTileLayout)
+			loadPreviousBookOnLoad(v.Path, bookTileLayout.Button)
 		}
+	}
+}
+
+func loadPreviousBookOnLoad(bookFolderName string, bookLoadButton *widget.Button) {
+	if storage.Data.CurrentBookFolder == bookFolderName {
+		go func() {
+			for {
+				time.Sleep(500 * time.Millisecond)
+				if MainWindow != nil {
+					bookLoadButton.OnTapped()
+					audio.Pause()
+					break
+				}
+			}
+		}()
 	}
 }
 
