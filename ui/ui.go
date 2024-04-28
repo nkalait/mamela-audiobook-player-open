@@ -26,6 +26,7 @@ func prepareMainWindow(label string, c *fyne.Container) {
 	MainWindow = mamelaApp.NewWindow(label)
 	MainWindow.SetContent(c)
 	MainWindow.Resize(fyne.NewSize(800, 600))
+	MainWindow.CenterOnScreen()
 	MainWindow.ShowAndRun()
 }
 
