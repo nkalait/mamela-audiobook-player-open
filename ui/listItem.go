@@ -65,6 +65,8 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 		// var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false, Position: 0}
 		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
 		audio.LoadAndPlay(playingBook, true, funcChanFolderArtUpdaterCallBack)
+		// Pause the audio book immediately after loading it, ...just to be user friendly
+		audio.Pause()
 	}
 
 	if bookImage != nil {
