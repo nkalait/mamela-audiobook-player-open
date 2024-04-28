@@ -330,6 +330,37 @@ func skipToNextFile(p *Player, forceSkip bool) bool {
 	return skipped
 }
 
+func goToBeginningOfFile(p *Player) bool {
+	const leadingSeconds = 5 * time.Second
+	const errStr = "Error seeking to beginning of file"
+	if p.channel != 0 {
+		active, err := p.channel.IsActive()
+		merror.ShowError(errStr, err)
+		if active == bass.ACTIVE_PLAYING || active == bass.ACTIVE_PAUSED {
+			currentBytePosition, err := p.channel.GetPosition(bass.POS_BYTE)
+			if err != nil {
+				merror.ShowError(errStr, err)
+				return false
+			}
+
+			currentSecondsPosition, err := p.channel.Bytes2Seconds(currentBytePosition)
+			if err != nil {
+				merror.ShowError(errStr, err)
+				return false
+			}
+			if currentSecondsPosition >= float64(leadingSeconds.Seconds()) {
+				err = p.channel.SetPosition(0, bass.POS_BYTE)
+				if err != nil {
+					merror.ShowError(errStr, err)
+					return false
+				}
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func skipToPreviousFile(p *Player) bool {
 	skipped := false
 	if p.channel != 0 {

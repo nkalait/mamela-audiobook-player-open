@@ -1,5 +1,4 @@
 - load last audio book that was playing on start up
-- FIX BUG, when user clicks skipPrevious; if not at the beginning of file the go to beginning of the file, if withing 3 seconds of the beginning of a file then go the previous file
 - Add refresh button to refresh the list of books in a directory
 - Show working animation when loading a new directory
 - Add a scrubber
