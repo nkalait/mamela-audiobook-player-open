@@ -70,8 +70,10 @@ const fastForwardRewindAmount = 30
 func (p *Player) fastRewind() {
 	if player.channel != 0 {
 		active, err := player.channel.IsActive()
-		merror.ShowError("", err)
-		merror.PanicError(err)
+		if err != nil {
+			merror.ShowError("", err)
+			return
+		}
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, err := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if err != nil {
@@ -140,6 +142,9 @@ func (p *Player) skipNext() {
 }
 
 func (p *Player) skipPrevious() {
+	if goToBeginningOfFile(p) {
+		return
+	}
 	skipToPreviousFile(p)
 }
 
