@@ -30,8 +30,6 @@ pack_mac:
 	cp lib/mac/libbass_aac.dylib ${PACK_LIB_MAC}
 	cp lib/mac/libbassopus.dylib ${PACK_LIB_MAC}
 	mkdir -p ${PACK_DB_DIR_MAC}
-	touch ${PACK_DB_DIR_MAC}/data.json
-	chmod 777 ${PACK_DB_DIR_MAC}/data.json 
 	install_name_tool -change @loader_path/libbass.dylib @loader_path/../lib/mac/libbass.dylib ${APP_DIR_MAC}/mamela
 
 #	fyne-cross linux -arch=* -app-id="nada.co"
