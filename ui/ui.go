@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"image/color"
 	"mamela/ui/customtheme"
 
 	"fyne.io/fyne/v2"
@@ -11,49 +10,55 @@ import (
 )
 
 var (
-	// colourDarkThemeBlackLight   = color.RGBA{38, 38, 38, 255}
-	colourDarkThemeBlackLighter = color.RGBA{51, 51, 51, 255}
-)
-
-var (
-	// BgColourLight   = colourDarkThemeBlackLight
-	BgColourLighter = colourDarkThemeBlackLighter
-)
-
-var (
-	MamelaApp  fyne.App
+	mamelaApp  fyne.App
 	MainWindow fyne.Window
 )
 
 func BuildUI(appLabel string) {
-	MamelaApp = app.New()
-	// MamelaApp.Settings().SetTheme(theme.DarkTheme())
+	mamelaApp = app.New()
+	setupTheming()
+	arrangeUI()
+	mainContainer := arrangeUI()
+	prepareMainWindow(appLabel, mainContainer)
+}
 
-	// if customtheme.IsDark(fyne.CurrentApp().Settings().Theme()) {
+func prepareMainWindow(label string, c *fyne.Container) {
+	MainWindow = mamelaApp.NewWindow(label)
+	MainWindow.SetContent(c)
+	MainWindow.Resize(fyne.NewSize(800, 600))
+	MainWindow.ShowAndRun()
+}
+
+func setupTheming() {
 	if customtheme.IsLight() {
-		MamelaApp.Settings().SetTheme(customtheme.LightTheme())
+		mamelaApp.Settings().SetTheme(customtheme.LightTheme())
 	} else {
-		MamelaApp.Settings().SetTheme(customtheme.DarkTheme())
+		mamelaApp.Settings().SetTheme(customtheme.DarkTheme())
 	}
+}
 
-	MainWindow = MamelaApp.NewWindow(appLabel)
-
+func arrangeUI() *fyne.Container {
 	// UI to show list of audio books
 	leftPane := container.NewStack(
 		canvas.NewRectangle(customtheme.GetColour(customtheme.ColourNameBackgroundLight)),
-		container.NewPadded(container.NewBorder(generateBookListContainerTop(), nil, nil, nil, initBookList())),
+		container.NewPadded(container.NewBorder(
+			generateBookListContainerTop(),
+			nil, nil, nil,
+			initBookList(),
+		)),
 	)
 
 	// Part of UI to place UI elements pertaining to currently playing audio book
 	currentlyPlayingContainer := createPlayingLayout()
 
 	// Place all parts UI parts together
-	bodyParts := container.NewBorder(nil, nil, leftPane, nil, currentlyPlayingContainer)
+	bodyParts := container.NewBorder(
+		nil,
+		nil,
+		leftPane,
+		nil,
+		currentlyPlayingContainer,
+	)
 
-	// bodyBg := canvas.NewRectangle(theme.BackgroundColor())
-	// body := container.NewStack(bodyBg, bodyParts)
-	main := container.NewGridWithColumns(1, bodyParts)
-	MainWindow.SetContent(main)
-	MainWindow.Resize(fyne.NewSize(800, 600))
-	MainWindow.ShowAndRun()
+	return container.NewGridWithColumns(1, bodyParts)
 }

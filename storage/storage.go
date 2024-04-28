@@ -22,12 +22,14 @@ type Store struct {
 
 var Data Store = Store{}
 
+// Load storage file data
 func LoadStorageFile() {
 	if checkStorageFile() {
 		readJSONFile()
 	}
 }
 
+// Check if storage file exists and is valid
 func checkStorageFile() bool {
 	fileExisted := false
 	if _, err := os.Stat(StorageFile); err == nil {
@@ -38,13 +40,16 @@ func checkStorageFile() bool {
 			log.Println(err)
 		}
 	}
+
 	go func() {
 		time.Sleep(time.Second * 3)
 		storageFileIsValid()
 	}()
+
 	return fileExisted
 }
 
+// Check if the storage file is a valid JSON file
 func storageFileIsValid() bool {
 	file, err := os.ReadFile(StorageFile)
 	if err != nil {
@@ -58,6 +63,7 @@ func storageFileIsValid() bool {
 	return true
 }
 
+// Read storage JSON file data into our Data variable
 func readJSONFile() {
 	file, err := os.ReadFile(StorageFile)
 	merror.ShowError("Problem reading storage file", err)
@@ -65,6 +71,7 @@ func readJSONFile() {
 	json.Unmarshal(file, &Data)
 }
 
+// Save data in Data variable to file on disk
 func SaveDataToStorageFile() {
 	jsonString, err := json.Marshal(Data)
 	if err != nil {
@@ -75,11 +82,13 @@ func SaveDataToStorageFile() {
 	merror.ShowError("Problem writing to storage file", err)
 }
 
+// Update list of books in storage file
 func SaveBookListToStorageFile(bookList []types.Book) {
 	Data.BookList = bookList
 	SaveDataToStorageFile()
 }
 
+// Update the currently playing audio book data in storage file
 func UpdateCurrentBook(bookPath string) {
 	Data.CurrentBookFolder = bookPath
 	SaveDataToStorageFile()
