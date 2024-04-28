@@ -1,5 +1,6 @@
 - load last audio book that was playing on start up
-- Add refresh button to refresh the list of books in a directory
+- Move load root directory to file menu and replace with refresh button
+    - refresh the list of books in a directory
 - Show working animation when loading a new directory
 - Add a scrubber
 - Highlight currently playing book
