@@ -60,11 +60,8 @@ func init() {
 	}()
 
 	go func() {
-		for {
-			select {
-			case <-CurrentBookPositionUpdateTicker.C:
-				saveCurrentPlayingBookPositionToDisk()
-			}
+		for range CurrentBookPositionUpdateTicker.C {
+			saveCurrentPlayingBookPositionToDisk()
 		}
 	}()
 
@@ -330,8 +327,10 @@ func skipToNextFile(p *Player, forceSkip bool) bool {
 	return skipped
 }
 
+//lint:ignore ST1011 honestly makes no sense
+const leadingSeconds = 5 * time.Second
+
 func goToBeginningOfFile(p *Player) bool {
-	const leadingSeconds = 5 * time.Second
 	const errStr = "Error seeking to beginning of file"
 	if p.channel != 0 {
 		active, err := p.channel.IsActive()
