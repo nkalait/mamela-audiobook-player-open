@@ -51,6 +51,7 @@ func (p *Player) stop() {
 		if err != nil {
 			merror.ShowError("", err)
 		} else {
+			saveCurrentPlayingBookPositionToDisk()
 			UIUpdateTicker.Stop()
 			CurrentBookPositionUpdateTicker.Stop()
 			p.playing = false
@@ -58,9 +59,6 @@ func (p *Player) stop() {
 			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUIOnStop()
-			saveCurrentPlayingBookPositionToDisk()
-			// updateUICurrentlyPlayingInfo()
-			// ChannelAudioState <- Stopped
 		}
 	}
 }

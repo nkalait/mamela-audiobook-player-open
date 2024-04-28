@@ -30,7 +30,9 @@ var bookListVBox *fyne.Container
 func initBookList() *fyne.Container {
 	bookListVBox = container.New(layout.NewVBoxLayout())
 	bookListContainer := initBookPane(bookListVBox)
-	updateBookList(true)
+	// Note, passing in true here will overwrite the book store in the storage file on disk,
+	// this also means losing saved book last play positions
+	updateBookList(false)
 
 	// Listen to book list update events
 	go func() {
@@ -81,7 +83,9 @@ func refreshBookList() {
 	audio.UpdateBookListChannel <- true
 }
 
-// Update the part of UI showing list of audio books
+// Update the part of UI showing list of audio books,
+// if readRootFolder is true then we scan the root folder and save contents
+// to the storage file
 func updateBookList(readRootFolder bool) {
 	if storage.Data.Root != "" {
 		if readRootFolder {

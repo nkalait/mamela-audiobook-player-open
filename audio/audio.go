@@ -41,9 +41,9 @@ const PlayingBookTickerDuration = 500 * time.Millisecond
 
 var UIUpdateTicker *time.Ticker = time.NewTicker(PlayingBookTickerDuration)
 
-// 30 second delay before saving currently playing books
+// 15 second delay before saving currently playing books
 // play position to disk
-const CurrentBookPositionTickerDuration = time.Second * 30
+const CurrentBookPositionTickerDuration = time.Second * 15
 
 var CurrentBookPositionUpdateTicker *time.Ticker = time.NewTicker(CurrentBookPositionTickerDuration)
 
@@ -162,6 +162,14 @@ func updateUIOnStop() {
 	UpdateNowPlayingChannel <- player.currentBook
 }
 
+func ClearCurrentlyPlaying() {
+	CurrentBookPositionUpdateTicker.Stop()
+	UIUpdateTicker.Stop()
+	player.channel.Free()
+	player.currentBook = types.PlayingBook{}
+	UpdateNowPlayingChannel <- player.currentBook
+}
+
 // Update the currently playing audio book information on the UI
 func updateUICurrentlyPlayingInfo() {
 	if player.channel != 0 {
@@ -205,7 +213,7 @@ type UpdateFolderArtCallBack func(playingBook types.PlayingBook)
 
 func LoadAndPlay(playingBook types.PlayingBook, resumePlayback bool, updaterFolderArtCallback UpdateFolderArtCallBack) {
 	// c, err := bass.StreamCreateURL("http://music.myradio.ua:8000/PopRock_news128.mp3", bass.DeviceStereo)
-	stopPlayingIfPlaying(player.channel, player)
+	stopPlayingIfPlaying()
 	player.currentBook = playingBook
 
 	chapter := player.currentBook.CurrentChapter
@@ -220,13 +228,13 @@ func LoadAndPlay(playingBook types.PlayingBook, resumePlayback bool, updaterFold
 	updateUICurrentlyPlayingInfo()
 }
 
-func stopPlayingIfPlaying(c bass.Channel, p Player) {
-	if c != 0 {
-		a, err := c.IsActive()
-		merror.ShowError("", err)
-		merror.PanicError(err)
-		if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
-			p.stop()
+func stopPlayingIfPlaying() {
+	if player.channel != 0 {
+		a, err := player.channel.IsActive()
+		if err == nil {
+			if a == bass.ACTIVE_PLAYING || a == bass.ACTIVE_PAUSED {
+				player.stop()
+			}
 		}
 	}
 }

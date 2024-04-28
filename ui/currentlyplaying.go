@@ -53,7 +53,12 @@ func createPlayingLayout() *fyne.Container {
 			if bookTitle.Hidden {
 				showUIItems()
 			}
-			updatePlaying(playingBook)
+			// If playingBook is empty
+			if playingBook.Path == "" {
+				clearCurrentlyPlaying()
+			} else {
+				updatePlaying(playingBook)
+			}
 		}
 	}()
 	return playingVBox
@@ -160,6 +165,12 @@ func layoutPlayerButtons() *fyne.Container {
 	)
 	return container.NewCenter(layout)
 }
+func clearCurrentlyPlaying() {
+	clearBookArt()
+	updateTitle("")
+	clearPlayingPosition()
+	updateBookFullLength("")
+}
 
 func updatePlaying(p types.PlayingBook) {
 	updateTitle(p.Title)
@@ -202,5 +213,10 @@ func updateBookFullLength(bookLength string) {
 
 func updatePlayingPosition(p types.PlayingBook) {
 	playingPosition.Text = audio.SecondsToTimeText(audio.GetCurrentBookPlayingDuration(p))
+	playingPosition.Refresh()
+}
+
+func clearPlayingPosition() {
+	playingPosition.Text = ""
 	playingPosition.Refresh()
 }

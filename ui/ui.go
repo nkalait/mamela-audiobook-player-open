@@ -54,6 +54,7 @@ func openSelectRootFolderDialog() {
 	if err != nil {
 		dialog.Message(err.Error())
 	} else if path != "" {
+		audio.ClearCurrentlyPlaying()
 		storage.Data.Root = path
 		refreshBookList()
 		storage.SaveDataToStorageFile()
