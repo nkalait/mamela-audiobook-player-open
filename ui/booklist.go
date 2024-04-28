@@ -22,20 +22,21 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/dhowden/tag"
 	bass "github.com/pteich/gobass"
-	"github.com/sqweek/dialog"
 )
+
+var bookListVBox *fyne.Container
 
 // Initialise part of the UI that lists audio books and listen to update events
 func initBookList() *fyne.Container {
-	bookListVBox := container.New(layout.NewVBoxLayout())
+	bookListVBox = container.New(layout.NewVBoxLayout())
 	bookListContainer := initBookPane(bookListVBox)
-	updateBookList(bookListVBox, false)
+	updateBookList(true)
 
 	// Listen to book list update events
 	go func() {
 		for update := range audio.UpdateBookListChannel {
 			if update {
-				updateBookList(bookListVBox, true)
+				updateBookList(true)
 			}
 		}
 	}()
@@ -56,7 +57,7 @@ func generateBookListContainerTop() *fyne.Container {
 	bookListHeaderTxt.TextSize = 24
 	bookListHeaderTxt.TextStyle.Bold = true
 	spacer := canvas.NewText("    ", color.Transparent)
-	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createFileDialogButton()))
+	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createRefreshButton()))
 	return top
 }
 
@@ -68,26 +69,22 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 	return hBox
 }
 
-func createFileDialogButton() *widget.Button {
-	icon := theme.FolderOpenIcon()
+func createRefreshButton() *widget.Button {
+	icon := theme.ViewRefreshIcon()
 	button := widget.NewButtonWithIcon("", icon, func() {
-		path, err := dialog.Directory().Title("Open root folder").Browse()
-		if err != nil {
-			dialog.Message(err.Error())
-		} else if path != "" {
-			storage.Data.Root = path
-			storage.SaveDataToStorageFile()
-			audio.UpdateBookListChannel <- true
-		}
-
+		refreshBookList()
 	})
 	return button
 }
 
+func refreshBookList() {
+	audio.UpdateBookListChannel <- true
+}
+
 // Update the part of UI showing list of audio books
-func updateBookList(bookListVBox *fyne.Container, force bool) {
+func updateBookList(readRootFolder bool) {
 	if storage.Data.Root != "" {
-		if len(storage.Data.BookList) == 0 || force {
+		if readRootFolder {
 			parseRootFolder()
 		}
 		bookListVBox.Objects = bookListVBox.Objects[:0]
@@ -96,6 +93,7 @@ func updateBookList(bookListVBox *fyne.Container, force bool) {
 			bookListVBox.Add(bookTileLayout)
 			loadPreviousBookOnLoad(v.Path, bookTileLayout.Button)
 		}
+		bookListVBox.Refresh()
 	}
 }
 

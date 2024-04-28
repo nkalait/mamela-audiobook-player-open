@@ -6,7 +6,6 @@ import (
 	"mamela/merror"
 	"mamela/storage"
 	"mamela/types"
-	"os"
 	"slices"
 	"time"
 
@@ -85,7 +84,6 @@ func tearDown(plugins []uint32) {
 		bass.PluginFree(p)
 	}
 	bass.Free()
-	os.Exit(0)
 }
 
 // Initialise Bass
@@ -114,12 +112,11 @@ func loadPlugins() []uint32 {
 }
 
 // Start listening to audio playing event and exit event
-func StartChannelListener(exitApp chan bool) {
+func StartChannelListener() {
 	go func() {
 	RoutineLoop:
 		for {
 			select {
-			// case <-time.After(time.Second):
 			case <-UIUpdateTicker.C:
 				updateUICurrentlyPlayingInfo()
 			case <-ExitListener:
@@ -127,8 +124,6 @@ func StartChannelListener(exitApp chan bool) {
 			}
 		}
 		exitAudio <- true
-		time.Sleep(time.Second * 2)
-		exitApp <- true
 	}()
 }
 

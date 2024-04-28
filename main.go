@@ -4,9 +4,6 @@ import (
 	"mamela/audio"
 	"mamela/storage"
 	"mamela/ui"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // Basically, this app plays audio books.
@@ -18,21 +15,21 @@ import (
 const appLabel = "Mamela"
 
 // Listens to exit app event
-var exitApp = make(chan bool)
+// var exitApp = make(chan bool)
 
-// Handle quit, kill, cancel type of signals
-func handleSignals() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGABRT)
-	<-c
-	onExit()
-	// exitApp <- true
-}
+// // Handle quit, kill, cancel type of signals
+// func handleSignals() {
+// 	c := make(chan os.Signal, 1)
+// 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGABRT)
+// 	<-c
+// 	onExit()
+// 	// exitApp <- true
+// }
 
 // Notify the audio package that it is type to exit
-func onExit() {
-	audio.ExitListener <- true
-}
+// func onExit() {
+// 	audio.ExitListener <- true
+// }
 
 func main() {
 	// Load the storage file from disk, we are dong it here so that
@@ -40,15 +37,15 @@ func main() {
 	storage.LoadStorageFile()
 
 	// Listen for the exit app event
-	go func() {
-		<-exitApp
-		onExit()
-		ui.MainWindow.Close()
-	}()
+	// go func() {
+	// 	<-exitApp
+	// 	onExit()
+	// 	ui.MainWindow.Close()
+	// }()
 
-	go audio.StartChannelListener(exitApp)
+	go audio.StartChannelListener()
 
-	go handleSignals()
+	// go handleSignals()
 
 	// Wait for Bass to be initialised before moving on
 	<-audio.BassInitiatedChan
@@ -56,6 +53,6 @@ func main() {
 	// There is a blocking call somewhere in there
 	ui.BuildUI(appLabel)
 
-	audio.ExitListener <- true
-	<-exitApp
+	// audio.ExitListener <- true
+	// <-exitApp
 }

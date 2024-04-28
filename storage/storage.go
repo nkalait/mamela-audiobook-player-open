@@ -5,7 +5,6 @@ package storage
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"mamela/merror"
 	"mamela/types"
 	"os"
@@ -34,17 +33,28 @@ func checkStorageFile() bool {
 	fileExisted := false
 	if _, err := os.Stat(StorageFile); err == nil {
 		fileExisted = true
+		go func() {
+			time.Sleep(time.Second * 3)
+			storageFileIsValid()
+		}()
 	} else if errors.Is(err, os.ErrNotExist) {
-		_, err := os.OpenFile(StorageFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		f, err := os.OpenFile(StorageFile, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Println(err)
+			go func() {
+				time.Sleep(time.Second * 3)
+				merror.ShowError("Error creating storage file", err)
+			}()
+		} else {
+			_, err = f.WriteString("{}")
+			f.Close()
+			if err != nil {
+				go func() {
+					time.Sleep(time.Second * 3)
+					merror.ShowError("Error writing to storage file", err)
+				}()
+			}
 		}
 	}
-
-	go func() {
-		time.Sleep(time.Second * 3)
-		storageFileIsValid()
-	}()
 
 	return fileExisted
 }
