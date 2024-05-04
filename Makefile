@@ -47,13 +47,13 @@ build_linux64:
 #########################################################################
 BINARY_NAME_WIN86=mamela_audiobook_player
 LIB_WIN86=lib
-build_linux64:
+build_win86:
 	mkdir -p ${LIB_WIN86}
 	cp lib/win32/libbass.dll ${LIB_WIN86}
 	cp lib/win32/libbass_aac.dll ${LIB_WIN86}
 	cp lib/win32/libbassopus.dll ${LIB_WIN86}
 
-	GOARCH=x86 GOOS=windows go build -o app/${BINARY_NAME_WIN86}-win86 main.go
+	go build -tags prod_win -o app/${BINARY_NAME_WIN86}-win86 main.go
 #########################################################################
 #########################################################################
 #########################################################################
