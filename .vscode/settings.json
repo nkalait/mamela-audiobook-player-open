@@ -11,7 +11,7 @@
     "sqweek"
   ],
   "gopls": {
-    "build.buildFlags": ["-tags=prod_mac"],
+    "build.buildFlags": ["-tags=prod_mac,prod_linux64"],
     "ui.semanticTokens": true,
     // you can optionally turn on these features for more colors
     // see https://go.dev/issue/45753 and https://go.dev/issue/45792

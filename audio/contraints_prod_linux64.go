@@ -1,4 +1,4 @@
-//go:build prod_mac
+//go:build prod_linux64
 
 package audio
 
@@ -18,6 +18,6 @@ func init() {
 	exPath := filepath.Dir(ex)
 	exPathArr := strings.Split(exPath, buildConstraints.PathSeparator)
 	exPathArr = exPathArr[0 : len(exPathArr)-1]
-	LibDir = strings.Join(exPathArr, buildConstraints.PathSeparator) + buildConstraints.PathSeparator + "lib" + buildConstraints.PathSeparator + "mac"
-	LibExt = ".dylib"
+	LibDir = strings.Join(exPathArr, buildConstraints.PathSeparator) + buildConstraints.PathSeparator + "lib"
+	LibExt = ".so"
 }

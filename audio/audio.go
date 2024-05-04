@@ -13,6 +13,7 @@ import (
 )
 
 var LibDir = "lib" + buildConstraints.PathSeparator + "mac"
+var LibExt = "" // library file extension, eg .dylib
 
 // Event listeners
 var (
@@ -97,10 +98,10 @@ func initBass() {
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac.dylib", bass.StreamDecode)
+	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
 	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
-	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus.dylib", bass.StreamDecode)
+	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus"+LibExt, bass.StreamDecode)
 	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
 
