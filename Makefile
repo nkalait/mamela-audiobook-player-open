@@ -40,6 +40,7 @@ build_linux64:
 	cp lib/linux64/libbassopus.so ${LIB_LINUX64}
 
 	GOARCH=amd64 GOOS=linux go build -o app/${BINARY_NAME_LINUX64}-linux64 main.go
+	cd app && ./${BINARY_NAME_LINUX64}-darwin
 
 #########################################################################
 #########################################################################
@@ -49,9 +50,9 @@ BINARY_NAME_WIN86=mamela_audiobook_player
 LIB_WIN86=lib
 build_win86:
 	mkdir -p ${LIB_WIN86}
-	cp lib/win32/libbass.dll ${LIB_WIN86}
-	cp lib/win32/libbass_aac.dll ${LIB_WIN86}
-	cp lib/win32/libbassopus.dll ${LIB_WIN86}
+	cp lib/win32/bass.dll ${LIB_WIN86}
+	cp lib/win32/bass_aac.dll ${LIB_WIN86}
+	cp lib/win32/bassopus.dll ${LIB_WIN86}
 
 	go build -tags prod_win -o app/${BINARY_NAME_WIN86}-win86 main.go
 #########################################################################
