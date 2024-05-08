@@ -79,12 +79,12 @@ pack_mac:
 #########################################################################
 
 PACK_APP_NAME_LINUX64=Mamela_linux64
-PACK_LIB_LINUX64=${PACK_APP_NAME_LINUX64}/lib/mac
-APP_DIR_LINUX64=${PACK_APP_NAME_LINUX64}/MacOS
-PACK_DB_DIR_LINUX64=${PACK_APP_NAME_LINUX64}/db
+PACK_LIB_LINUX64=${PACK_APP_NAME_LINUX64}/lib
+APP_DIR_LINUX64=${PACK_APP_NAME_LINUX64}
+PACK_DB_DIR_LINUX64=${PACK_APP_NAME_LINUX64}
 pack_linux64:
 # https://github.com/fyne-io/fyne-cross
-	fyne package -os linux -appID mamela.co.ls --tags prod_mac --release 
+	GOARCH=amd64 GOOS=linux fyne package -os linux -appID mamela.co.ls --tags prod_linux64 --release 
 #	mv mamela.app ${PACK_APP_NAME_LINUX64}
 #	mkdir -p ${PACK_LIB_LINUX64}
 #	cp lib/linux64/libbass.so ${PACK_LIB_LINUX64}

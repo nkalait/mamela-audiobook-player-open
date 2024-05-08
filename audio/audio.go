@@ -12,14 +12,15 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
-var LibExt = "" // library file extension, eg .dylib
+var LibDir = "lib" + buildconstraints.PathSeparator
+var LibExt = "_____" // library file extension, eg .dylib
 
 // Event listeners
 var (
 	ExitListener      = make(chan bool) // for stopping to listen to playing events
 	exitAudio         = make(chan bool) // for unloading audio stuff
 	BassInitiatedChan = make(chan bool)
+	NotifyInitReady   = make(chan bool)
 )
 
 // const (
@@ -53,6 +54,7 @@ func init() {
 	UIUpdateTicker.Stop()
 	CurrentBookPositionUpdateTicker.Stop()
 	go func() {
+		<-NotifyInitReady
 		plugins := loadPlugins()
 		initBass()
 		<-exitAudio
@@ -98,7 +100,7 @@ func initBass() {
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	fmt.Println(LibDir + buildconstraints.PathSeparator + "libbass_aac" + LibExt)
+	fmt.Println(LibDir + "libbass_aac" + LibExt)
 	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
 	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
