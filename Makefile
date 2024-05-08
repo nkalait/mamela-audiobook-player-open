@@ -31,16 +31,16 @@ build_mac:
 # cannot open shared object file: No such file or directory" then try placing
 # libbass.so in /lib, also ldd the executable to see where it is loading
 # some libraries from
-BINARY_NAME_LINUX64=mamela_audiobook_player
-LIB_LINUX64=lib
+BINARY_NAME_LINUX64=mamela_audiobook_player_linux64
+LIB_LINUX64=app/lib
 build_linux64:
 	mkdir -p ${LIB_LINUX64}
-	cp lib/linux64/libbass.so ${LIB_LINUX64}
+	cp lib/linux64/libbass.so app
 	cp lib/linux64/libbass_aac.so ${LIB_LINUX64}
 	cp lib/linux64/libbassopus.so ${LIB_LINUX64}
 
-	GOARCH=amd64 GOOS=linux go build -o app/${BINARY_NAME_LINUX64}-linux64 main.go
-	cd app && ./${BINARY_NAME_LINUX64}-darwin
+	GOARCH=amd64 GOOS=linux go build -o app/${BINARY_NAME_LINUX64} -tags=prod_linux64 main.go
+	cd app && ./${BINARY_NAME_LINUX64}
 
 #########################################################################
 #########################################################################

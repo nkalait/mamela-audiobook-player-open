@@ -1,5 +1,5 @@
 //go:build windows
 
-package buildConstraints
+package buildconstraints
 
 const PathSeparator = "\\"

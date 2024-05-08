@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"image"
 	"mamela/audio"
-	"mamela/buildConstraints"
+	"mamela/buildconstraints"
 	"mamela/storage"
 	"mamela/types"
 	"os"
@@ -30,7 +30,7 @@ func getBookImage(book types.Book) *tag.Picture {
 	if book.Metadata != nil && book.Metadata.Picture() != nil {
 		pic = book.Metadata.Picture()
 	} else if book.FolderArt != "" {
-		fileBytes, err := os.ReadFile(storage.Data.Root + buildConstraints.PathSeparator + book.Path + buildConstraints.PathSeparator + book.FolderArt)
+		fileBytes, err := os.ReadFile(storage.Data.Root + buildconstraints.PathSeparator + book.Path + buildconstraints.PathSeparator + book.FolderArt)
 		if err == nil {
 			pic = &tag.Picture{Data: fileBytes}
 		}

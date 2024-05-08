@@ -2,7 +2,7 @@ package audio
 
 import (
 	"fmt"
-	"mamela/buildConstraints"
+	"mamela/buildconstraints"
 	"mamela/merror"
 	"mamela/storage"
 	"mamela/types"
@@ -12,7 +12,7 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var LibDir = "lib" + buildConstraints.PathSeparator + "mac"
+var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
 var LibExt = "" // library file extension, eg .dylib
 
 // Event listeners
@@ -98,10 +98,11 @@ func initBass() {
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
+	fmt.Println(LibDir + buildconstraints.PathSeparator + "libbass_aac" + LibExt)
+	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
 	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
-	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildConstraints.PathSeparator+"libbassopus"+LibExt, bass.StreamDecode)
+	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbassopus"+LibExt, bass.StreamDecode)
 	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
 
@@ -218,7 +219,7 @@ func LoadAndPlay(playingBook types.PlayingBook, resumePlayback bool, updaterFold
 	player.currentBook = playingBook
 
 	chapter := player.currentBook.CurrentChapter
-	err := loadAudioBookFile(storage.Data.Root + buildConstraints.PathSeparator + player.currentBook.Path + buildConstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
+	err := loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
 	if err == nil {
 		startPlaying(resumePlayback)
 	}
@@ -306,7 +307,7 @@ func skipToLastPosition() int {
 			return 0
 		}
 		player.currentBook.Position = time.Duration(newPos * 1000000000)
-		loadAudioBookFile(storage.Data.Root + buildConstraints.PathSeparator + player.currentBook.Path + buildConstraints.PathSeparator + player.currentBook.Chapters[player.currentBook.CurrentChapter].FileName)
+		loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[player.currentBook.CurrentChapter].FileName)
 	}
 
 	return bytePos

@@ -3,7 +3,7 @@ package ui
 import (
 	"image/color"
 	"mamela/audio"
-	"mamela/buildConstraints"
+	"mamela/buildconstraints"
 	"mamela/filetypes"
 	"mamela/merror"
 	"mamela/storage"
@@ -127,7 +127,7 @@ func parseRootFolder() {
 	for _, folder := range rootFolderEntries {
 		isAValidAudioBook := false
 		if folder.IsDir() {
-			bookFullPath := storage.Data.Root + buildConstraints.PathSeparator + folder.Name()
+			bookFullPath := storage.Data.Root + buildconstraints.PathSeparator + folder.Name()
 			bookFolder, err := os.ReadDir(bookFullPath)
 			if err == nil {
 				highestQuality := int64(0)
@@ -171,7 +171,7 @@ func parseRootFolder() {
 }
 
 func getBookFile(b types.Book) *os.File {
-	path := storage.Data.Root + buildConstraints.PathSeparator + b.Path + buildConstraints.PathSeparator + b.Chapters[0].FileName
+	path := storage.Data.Root + buildconstraints.PathSeparator + b.Path + buildconstraints.PathSeparator + b.Chapters[0].FileName
 	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 	return f
 }
@@ -188,7 +188,7 @@ func getFileTag(b types.Book) tag.Metadata {
 
 func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
 	length := float64(0)
-	c, err := bass.StreamCreateFile(fullPath+buildConstraints.PathSeparator+fileName, 0, bass.AsyncFile)
+	c, err := bass.StreamCreateFile(fullPath+buildconstraints.PathSeparator+fileName, 0, bass.AsyncFile)
 	if err == nil {
 		bytesLen, err := c.GetLength(bass.POS_BYTE)
 		if err == nil {
