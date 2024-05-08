@@ -84,7 +84,7 @@ APP_DIR_LINUX64=${PACK_APP_NAME_LINUX64}
 PACK_DB_DIR_LINUX64=${PACK_APP_NAME_LINUX64}
 pack_linux64:
 # https://github.com/fyne-io/fyne-cross
-	GOARCH=amd64 GOOS=linux fyne package -os linux -appID mamela.co.ls --tags prod_linux64 --release 
+	fyne package -os linux -appID mamela.co.ls --tags prod_linux64 --release 
 #	mv mamela.app ${PACK_APP_NAME_LINUX64}
 #	mkdir -p ${PACK_LIB_LINUX64}
 #	cp lib/linux64/libbass.so ${PACK_LIB_LINUX64}
