@@ -186,13 +186,6 @@ func clearBookArt() {
 
 func updateBookArt(picBytes []byte) {
 	clearBookArt()
-	// if pic == nil {
-	// 	return
-	// }
-	// if len(pic.Data) == 0 {
-	// 	return
-	// }
-	// img, _, err := image.Decode(bytes.NewReader(pic.Data))
 	img, _, err := image.Decode(bytes.NewReader(picBytes))
 	if err != nil {
 		merror.ShowError("Problem loading audio book image", err)
