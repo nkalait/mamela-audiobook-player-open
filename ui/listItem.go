@@ -5,6 +5,7 @@ import (
 	"image"
 	"mamela/audio"
 	"mamela/buildconstraints"
+	"mamela/bundled"
 	"mamela/storage"
 	"mamela/types"
 	"os"
@@ -25,18 +26,23 @@ type MyListItemWidget struct {
 	Button *widget.Button
 }
 
-func getBookImage(book types.Book) *tag.Picture {
+func getBookImage(book types.Book) []byte {
+	var picBytes []byte
 	var pic *tag.Picture = nil
 	if book.Metadata != nil && book.Metadata.Picture() != nil {
 		pic = book.Metadata.Picture()
+		picBytes = pic.Data
 	} else if book.FolderArt != "" {
 		fileBytes, err := os.ReadFile(storage.Data.Root + buildconstraints.PathSeparator + book.Path + buildconstraints.PathSeparator + book.FolderArt)
 		if err == nil {
 			pic = &tag.Picture{Data: fileBytes}
+			picBytes = pic.Data
 		}
+	} else {
+		picBytes = bundled.ResourceIconPng.StaticContent
 	}
 
-	return pic
+	return picBytes
 }
 
 // Update the image shown when loading an audio book
@@ -53,7 +59,7 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	var img image.Image
 
 	if bookImage != nil {
-		img, _, _ = image.Decode(bytes.NewReader(bookImage.Data))
+		img, _, _ = image.Decode(bytes.NewReader(bookImage))
 	}
 
 	var res = &fyne.StaticResource{
@@ -62,13 +68,12 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	}
 
 	callback := func() {
-		// var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false, Position: 0}
 		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
 		audio.LoadAndPlay(playingBook, false, funcChanFolderArtUpdaterCallBack)
 	}
 
 	if bookImage != nil {
-		res.StaticContent = bookImage.Data
+		res.StaticContent = bookImage
 		button = widget.NewButtonWithIcon("", res, callback)
 		title = "       " + cases.Title(language.English).String(b.Title)
 	} else {

@@ -14,7 +14,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/dhowden/tag"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -185,15 +184,16 @@ func clearBookArt() {
 	bookArt.Refresh()
 }
 
-func updateBookArt(pic *tag.Picture) {
+func updateBookArt(picBytes []byte) {
 	clearBookArt()
-	if pic == nil {
-		return
-	}
-	if len(pic.Data) == 0 {
-		return
-	}
-	img, _, err := image.Decode(bytes.NewReader(pic.Data))
+	// if pic == nil {
+	// 	return
+	// }
+	// if len(pic.Data) == 0 {
+	// 	return
+	// }
+	// img, _, err := image.Decode(bytes.NewReader(pic.Data))
+	img, _, err := image.Decode(bytes.NewReader(picBytes))
 	if err != nil {
 		merror.ShowError("Problem loading audio book image", err)
 		return
