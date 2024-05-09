@@ -7,17 +7,14 @@ import (
 	"mamela/merror"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func init() {
-	ex, err := os.Executable()
+	exPath, err := filepath.Abs(filepath.Dir(os.Args[0])) //get the current working directory
 	if err != nil {
 		merror.ShowError("", err)
 	}
-	exPath := filepath.Dir(ex)
-	exPathArr := strings.Split(exPath, buildconstraints.PathSeparator)
-	exPathArr = exPathArr[0 : len(exPathArr)-1]
-	LibDir = strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "lib"
+	LibDir = exPath + buildconstraints.PathSeparator + "lib"
 	LibExt = ".dll"
+	NotifyInitReady <- true
 }

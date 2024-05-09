@@ -20,4 +20,5 @@ func init() {
 	exPathArr = exPathArr[0 : len(exPathArr)-1]
 	LibDir = strings.Join(exPathArr, buildconstraints.PathSeparator) + buildconstraints.PathSeparator + "lib" + buildconstraints.PathSeparator + "mac"
 	LibExt = ".dylib"
+	NotifyInitReady <- true
 }

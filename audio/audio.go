@@ -12,8 +12,8 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var LibDir = "lib" + buildconstraints.PathSeparator
-var LibExt = "_____" // library file extension, eg .dylib
+var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
+var LibExt = ".dylib" // library file extension, eg .dylib
 
 // Event listeners
 var (
@@ -100,12 +100,10 @@ func initBass() {
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	fmt.Println(LibDir + "libbass_aac" + LibExt)
+	fmt.Println(LibDir + buildconstraints.PathSeparator + "libbass_aac" + LibExt)
 	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
-	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
 	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbassopus"+LibExt, bass.StreamDecode)
-	merror.ShowError("Problem loading plugin", err)
 	merror.PanicError(err)
 
 	plugins := make([]uint32, 2)
@@ -223,7 +221,11 @@ func LoadAndPlay(playingBook types.PlayingBook, resumePlayback bool, updaterFold
 	chapter := player.currentBook.CurrentChapter
 	err := loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[chapter].FileName)
 	if err == nil {
-		startPlaying(resumePlayback)
+		setPreviousPosition()
+	}
+
+	if resumePlayback {
+		player.play()
 	}
 
 	if updaterFolderArtCallback != nil {
@@ -253,16 +255,11 @@ func loadAudioBookFile(fullPath string) error {
 	return err
 }
 
-func startPlaying(resumePlayback bool) error {
-	bytePos := 0
-	if resumePlayback {
-		bytePos = skipToLastPosition()
-	}
+func setPreviousPosition() error {
+	bytePos := skipToLastPosition()
 	err := player.channel.SetPosition(bytePos, bass.POS_BYTE)
 	if err != nil {
-		merror.ShowError("There seems to be a problem playing the the audio book file(s)", err)
-	} else {
-		player.play()
+		merror.ShowError("There seems to be a problem setting previous play position for this audio book", err)
 	}
 	return err
 }

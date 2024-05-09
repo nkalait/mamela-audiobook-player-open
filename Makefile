@@ -13,7 +13,7 @@ build_mac:
 	cp lib/mac/libbassopus.dylib ${LIB_MAC}
 
 #	GOARCH=amd64 GOOS=darwin go build -tags debug -o app/${BINARY_NAME_MAC}-darwin main.go
-	GOARCH=amd64 GOOS=darwin go build -o app/${BINARY_NAME_MAC}-darwin main.go
+	GOARCH=amd64 GOOS=darwin go build -tags working -o app/${BINARY_NAME_MAC}-darwin main.go
 #	GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux main.go
 #	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows main.go
 
@@ -38,8 +38,8 @@ build_linux64:
 	cp lib/linux64/libbass.so app
 	cp lib/linux64/libbass_aac.so ${LIB_LINUX64}
 	cp lib/linux64/libbassopus.so ${LIB_LINUX64}
-
-	GOARCH=amd64 GOOS=linux go build -o app/${BINARY_NAME_LINUX64} -tags=prod_linux64 main.go
+	
+	GOARCH=amd64 GOOS=linux go build -tags working -o app/${BINARY_NAME_LINUX64} -tags=prod_linux64 main.go
 	cd app && ./${BINARY_NAME_LINUX64}
 
 #########################################################################
