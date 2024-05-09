@@ -58,6 +58,7 @@ func createPlayingLayout() *fyne.Container {
 				clearCurrentlyPlaying()
 			} else {
 				updatePlaying(playingBook)
+				MainWindow.Content().Refresh()
 			}
 		}
 	}()
