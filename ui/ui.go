@@ -21,7 +21,6 @@ var (
 func BuildUI(appLabel string) {
 	mamelaApp = app.New()
 	setupTheming()
-	arrangeUI()
 	mainContainer := arrangeUI()
 	prepareMainWindow(appLabel, mainContainer)
 }
