@@ -100,10 +100,12 @@ func initBass() {
 
 // Load plugins needed by Bass
 func loadPlugins() []uint32 {
-	fmt.Println(LibDir + buildconstraints.PathSeparator + "libbass_aac" + LibExt)
-	pluginLibbassAac, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbass_aac"+LibExt, bass.StreamDecode)
+	aacPath := LibDir + buildconstraints.PathSeparator + "libbass_aac" + LibExt
+	opusPath := LibDir + buildconstraints.PathSeparator + "libbassopus" + LibExt
+
+	pluginLibbassAac, err := bass.PluginLoad(aacPath, bass.StreamDecode)
 	merror.PanicError(err)
-	pluginLibbassOpus, err := bass.PluginLoad(LibDir+buildconstraints.PathSeparator+"libbassopus"+LibExt, bass.StreamDecode)
+	pluginLibbassOpus, err := bass.PluginLoad(opusPath, bass.StreamDecode)
 	merror.PanicError(err)
 
 	plugins := make([]uint32, 2)
