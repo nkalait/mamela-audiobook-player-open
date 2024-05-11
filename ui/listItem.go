@@ -69,7 +69,7 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 
 	callback := func() {
 		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
-		audio.LoadAndPlay(playingBook, false, funcChanFolderArtUpdaterCallBack)
+		audio.LoadAndPlay(playingBook, false, true, funcChanFolderArtUpdaterCallBack)
 	}
 
 	if bookImage != nil {

@@ -36,6 +36,7 @@ func (p *Player) pause() {
 		} else {
 			if active == bass.ACTIVE_PLAYING {
 				err := p.channel.Pause()
+				p.playing = false
 				UIUpdateTicker.Stop()
 				CurrentBookPositionUpdateTicker.Stop()
 				merror.ShowError("", err)
@@ -80,7 +81,7 @@ func (p *Player) fastRewind() {
 				currentBytePosition, err := p.channel.GetPosition(bass.POS_BYTE)
 				if err == nil {
 					if currentBytePosition-bytePositionAmount < 0 {
-						if skipToPreviousFile(p) {
+						if skipToPreviousFile(p, true, false) {
 							completeFileByteLength, err := p.channel.GetLength(bass.POS_BYTE)
 							if err == nil {
 								newPos := completeFileByteLength - bytePositionAmount
@@ -120,7 +121,7 @@ func (p *Player) fastForward() {
 					byteLength, err := p.channel.GetLength(bass.POS_BYTE)
 					if err == nil {
 						if currentBytePosition+bytePositionAmount >= byteLength {
-							if !skipToNextFile(p, false) {
+							if !skipToNextFile(p, false, true, false) {
 								p.channel.SetPosition(byteLength, bass.POS_BYTE)
 							}
 						} else {
@@ -136,14 +137,14 @@ func (p *Player) fastForward() {
 }
 
 func (p *Player) skipNext() {
-	skipToNextFile(p, false)
+	skipToNextFile(p, false, p.playing, false)
 }
 
 func (p *Player) skipPrevious() {
 	if goToBeginningOfFile(p) {
 		return
 	}
-	skipToPreviousFile(p)
+	skipToPreviousFile(p, p.playing, false)
 }
 
 func Play() {
