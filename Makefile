@@ -13,7 +13,7 @@ build_mac:
 	cp lib/mac/libbassopus.dylib ${LIB_MAC}
 
 #	GOARCH=amd64 GOOS=darwin go build -tags debug -o app/${BINARY_NAME_MAC}-darwin main.go
-	GOARCH=amd64 GOOS=darwin go build -tags working -o app/${BINARY_NAME_MAC}-darwin main.go
+	GOARCH=amd64 GOOS=darwin CGO_LDFLAGS="-L lib/mac -rpath lib/mac" go build -tags working -o app/${BINARY_NAME_MAC}-darwin main.go
 #	GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux main.go
 #	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows main.go
 
