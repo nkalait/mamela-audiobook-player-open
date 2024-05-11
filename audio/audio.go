@@ -17,23 +17,13 @@ var LibExt = ".dylib" // library file extension, eg .dylib
 
 // Event listeners
 var (
-	ExitListener      = make(chan bool) // for stopping to listen to playing events
-	exitAudio         = make(chan bool) // for unloading audio stuff
-	BassInitiatedChan = make(chan bool)
-	NotifyInitReady   = make(chan bool)
+	ExitListener            = make(chan bool) // for stopping to listen to playing events
+	exitAudio               = make(chan bool) // for unloading audio stuff
+	BassInitiatedChan       = make(chan bool)
+	NotifyInitReady         = make(chan bool)
+	UpdateNowPlayingChannel = make(chan types.PlayingBook)
+	UpdateBookListChannel   = make(chan bool)
 )
-
-// const (
-// 	Stopped = iota
-// 	Paused
-// 	Playing
-// )
-
-// var ChannelAudioState = make(chan int)
-var UpdateNowPlayingChannel = make(chan types.PlayingBook)
-
-// Listens to events about changes to audio books root folder
-var UpdateBookListChannel = make(chan bool)
 
 // Holds data structures important to playing an audio book
 var player Player
