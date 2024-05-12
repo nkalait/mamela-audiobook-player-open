@@ -1,3 +1,5 @@
+- Playing is slow, try doing it through buffering
+- Seeking is very slow, fix it
 - Access storage using getter functions
 - Show working animation when loading a new directory
 - Highlight currently playing book
