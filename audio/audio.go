@@ -15,14 +15,24 @@ import (
 var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
 var LibExt = ".dylib" // library file extension, eg .dylib
 
+const (
+	PAUSED = iota
+	PLAYING
+	STOPPED
+)
+
 // Event listeners
 var (
-	ExitListener            = make(chan bool) // for stopping to listen to playing events
-	exitAudio               = make(chan bool) // for unloading audio stuff
-	BassInitiatedChan       = make(chan bool)
-	NotifyInitReady         = make(chan bool)
-	UpdateNowPlayingChannel = make(chan types.PlayingBook)
-	UpdateBookListChannel   = make(chan bool)
+	ExitListener                    = make(chan bool) // for stopping to listen to playing events
+	exitAudio                       = make(chan bool) // for unloading audio stuff
+	BassInitiatedChan               = make(chan bool)
+	NotifyInitReady                 = make(chan bool)
+	UpdateNowPlayingChannel         = make(chan types.PlayingBook)
+	UpdateBookListChannel           = make(chan bool)
+	NotifyVolumeSliderDragged       = make(chan float64)
+	NotifyBookPlayTime              = make(chan time.Duration)
+	NotifyBookPlayTimeSliderDragged = make(chan float64)
+	NotifyNewBookLoaded             = make(chan float64)
 )
 
 // Holds data structures important to playing an audio book
@@ -47,6 +57,8 @@ func init() {
 		<-NotifyInitReady
 		plugins := loadPlugins()
 		initBass()
+		setVolumeSliderDragListener()
+		setPlayTimeScrubberDragListener()
 		<-exitAudio
 		tearDown(plugins)
 	}()
@@ -59,13 +71,48 @@ func init() {
 
 }
 
+func setVolumeSliderDragListener() {
+	go func() {
+		for vol := range NotifyVolumeSliderDragged {
+			player.setVolume(vol)
+		}
+	}()
+}
+
+func setPlayTimeScrubberDragListener() {
+	go func() {
+		for pos := range NotifyBookPlayTimeSliderDragged {
+			if player.channel != 0 {
+				originalState := player.state
+				if originalState == PLAYING {
+					player.pause()
+				}
+				posDuration := time.Duration(pos * 1000000000)
+				targetBytePos := getTargetPositionInBytes(posDuration)
+				err := player.channel.SetPosition(targetBytePos, bass.POS_BYTE)
+				if err != nil {
+					merror.ShowError("Could not set new position", err)
+				}
+				UpdateNowPlayingChannel <- player.currentBook
+				if originalState == PLAYING {
+					player.play()
+				}
+			}
+		}
+	}()
+}
+
+func GetCurrentBookFullLength() float64 {
+	return player.currentBook.FullLengthSeconds
+}
+
 func saveCurrentPlayingBookPositionToDisk() {
 	if len(storage.Data.BookList) > 0 {
 		idx := slices.IndexFunc(storage.Data.BookList, func(b types.Book) bool {
 			return b.Path == player.currentBook.Path
 		})
 		if idx > -1 {
-			storage.Data.BookList[idx].Position = GetCurrentBookPlayingDuration(player.currentBook)
+			storage.Data.BookList[idx].Position = GetCurrentBookPlayTime()
 			storage.SaveBookListToStorageFile(storage.Data.BookList)
 		}
 	}
@@ -143,17 +190,18 @@ func SecondsToTimeText(seconds time.Duration) string {
 	return sh + " : " + sm + " : " + ss
 }
 
-func GetCurrentBookPlayingDuration(p types.PlayingBook) time.Duration {
-	pos := p.Position
-	if p.CurrentChapter > 0 {
-		for i := p.CurrentChapter - 1; i >= 0; i-- {
-			pos = pos + time.Duration(p.Chapters[i].LengthInSeconds*1000000000)
+func GetCurrentBookPlayTime() time.Duration {
+	pos := player.currentBook.Position
+	if player.currentBook.CurrentChapter > 0 {
+		for i := player.currentBook.CurrentChapter - 1; i >= 0; i-- {
+			pos = pos + time.Duration(player.currentBook.Chapters[i].LengthInSeconds*1000000000)
 		}
 	}
 	return pos
 }
 func updateUIOnStop() {
 	UpdateNowPlayingChannel <- player.currentBook
+	NotifyBookPlayTime <- 0
 }
 
 func ClearCurrentlyPlaying() {
@@ -183,15 +231,15 @@ func updateUICurrentlyPlayingInfo() {
 
 			// If audio book has multiple files; if a file in the book has reached the end then load the next file
 			// and continue playing
-			currentlyAt := player.currentBook.Position.Round(time.Second)
-			skipAt := time.Duration(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds * 1000000000).Round(time.Second)
+			currentlyAt := player.currentBook.Position.Round(time.Millisecond * 500)
+			skipAt := time.Duration(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds * 1000000000).Round(time.Millisecond * 500)
 			if currentlyAt == skipAt {
 				skipToNextFile(&player, true, true, false)
 			}
 
 			// If we have reached the end of the audio book then stop playing
-			posInWholeBook := GetCurrentBookPlayingDuration(player.currentBook).Round(time.Second)
-			wholeBookLength := time.Duration(player.currentBook.FullLengthSeconds * 1000000000).Round(time.Second)
+			posInWholeBook := GetCurrentBookPlayTime().Round(time.Millisecond * 500)
+			wholeBookLength := time.Duration(player.currentBook.FullLengthSeconds * 1000000000).Round(time.Millisecond * 500)
 			if posInWholeBook == wholeBookLength {
 				player.currentBook.Finished = true
 				UIUpdateTicker.Stop()
@@ -201,6 +249,7 @@ func updateUICurrentlyPlayingInfo() {
 
 			var d time.Duration = time.Duration(pos * 1000000000)
 			player.currentBook.Position = time.Duration(d)
+			NotifyBookPlayTime <- GetCurrentBookPlayTime()
 		}
 		UpdateNowPlayingChannel <- player.currentBook
 	}
@@ -246,21 +295,11 @@ func loadAudioBookFile(fullPath string) error {
 	if err != nil {
 		merror.ShowError("There seems to be a problem loading the the audio book file(s)", err)
 	}
-
-	return err
-}
-
-func goToPreviousPosition() error {
-	bytePos := seekToLastPosition()
-	err := player.channel.SetPosition(bytePos, bass.POS_BYTE)
-	if err != nil {
-		merror.ShowError("There seems to be a problem setting previous play position for this audio book", err)
-	}
 	return err
 }
 
 // We want to use the position saved to disk here so that we can resume playback
-func seekToLastPosition() int {
+func goToPreviousPosition() error {
 	savedPos := time.Duration(0)
 	// Get the last play position that was saved to disk
 	{
@@ -271,38 +310,49 @@ func seekToLastPosition() int {
 			savedPos = storage.Data.BookList[idx].Position
 		}
 	}
+	targetBytePos := getTargetPositionInBytes(savedPos)
+	err := player.channel.SetPosition(targetBytePos, bass.POS_BYTE)
+	if err != nil {
+		merror.ShowError("There seems to be a problem setting previous play position for this audio book", err)
+	}
+	return err
+}
 
+func getTargetPositionInBytes(targetPosition time.Duration) int {
+	chapter := 0
 	// Byte position of the last play position saved on disk
-	bytePos, _ := player.channel.Seconds2Bytes(float64(savedPos.Seconds()))
+	bytePos, err := player.channel.Seconds2Bytes(targetPosition.Seconds())
+	if err != nil {
+		merror.ShowError("Invalid saved book position", err)
+		return 0
+	}
 	// Determine the last chapter that was playing while also decrementing bytePos
 	// by the concatenated lengths of all the chapters that have played
 	{
 		concatLength := float64(0)
 		for _, c := range player.currentBook.Chapters {
 			concatLength += c.LengthInSeconds
-			if savedPos.Seconds() > concatLength {
-				b, err := player.channel.Seconds2Bytes(player.currentBook.Chapters[player.currentBook.CurrentChapter].LengthInSeconds)
+			if targetPosition.Seconds() > concatLength {
+				b, err := player.channel.Seconds2Bytes(player.currentBook.Chapters[chapter].LengthInSeconds)
 				if err != nil {
 					merror.ShowError("Could not start from last play position, will play from the beginning of the audio book", err)
 					return 0
 				}
 				bytePos = bytePos - b
-				player.currentBook.CurrentChapter++
+				chapter++
 			}
 		}
 	}
 
-	// If the audio book has played pass at least one chapter, ie one file,
-	// then load the appropriate file to play and set the appropriate position to start at
-	if player.currentBook.CurrentChapter > 0 {
-		newPos, err := player.channel.Bytes2Seconds(bytePos)
-		if err != nil {
-			merror.ShowError("Could not start from last play position, will play from the beginning of the audio book", err)
-			return 0
-		}
-		player.currentBook.Position = time.Duration(newPos * 1000000000)
-		loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[player.currentBook.CurrentChapter].FileName)
+	// Load the appropriate file to play and set the appropriate position to start at
+	newPos, err := player.channel.Bytes2Seconds(bytePos)
+	if err != nil {
+		merror.ShowError("Could not start from last play position, will play from the beginning of the audio book", err)
+		return 0
 	}
+	loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[player.currentBook.CurrentChapter].FileName)
+	player.currentBook.CurrentChapter = chapter
+	player.currentBook.Position = time.Duration(newPos * 1000000000)
 
 	return bytePos
 }

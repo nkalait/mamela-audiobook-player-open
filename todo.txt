@@ -1,5 +1,4 @@
-- Have a volume controller
-- Add a scrubber
+- Access storage using getter functions
 - Show working animation when loading a new directory
 - Highlight currently playing book
 - stop playing and clear storage.Data.BookList ???

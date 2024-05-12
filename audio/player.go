@@ -13,15 +13,18 @@ type Player struct {
 	currentBook types.PlayingBook
 	channel     bass.Channel
 	playing     bool
+	state       int
 }
 
 func (p *Player) play() {
 	if p.channel != 0 {
+		p.setVolume(storage.GetVolumeLevel())
 		err := p.channel.Play(false)
 		if err == nil {
 			UIUpdateTicker.Reset(PlayingBookTickerDuration)
 			CurrentBookPositionUpdateTicker.Reset(CurrentBookPositionTickerDuration)
 			p.playing = true
+			p.state = PLAYING
 			storage.UpdateCurrentBook(p.currentBook.Path)
 		}
 		merror.ShowError("", err)
@@ -35,8 +38,10 @@ func (p *Player) pause() {
 			merror.ShowError("", err)
 		} else {
 			if active == bass.ACTIVE_PLAYING {
+				saveCurrentPlayingBookPositionToDisk()
 				err := p.channel.Pause()
 				p.playing = false
+				p.state = PAUSED
 				UIUpdateTicker.Stop()
 				CurrentBookPositionUpdateTicker.Stop()
 				merror.ShowError("", err)
@@ -56,6 +61,7 @@ func (p *Player) stop() {
 			UIUpdateTicker.Stop()
 			CurrentBookPositionUpdateTicker.Stop()
 			p.playing = false
+			p.state = STOPPED
 			p.currentBook.Position = time.Duration(0)
 			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
@@ -145,6 +151,15 @@ func (p *Player) skipPrevious() {
 		return
 	}
 	skipToPreviousFile(p, p.playing, false)
+}
+
+func (p *Player) setVolume(vol float64) {
+	bass.SetConfig(bass.CONFIG_GVOL_STREAM, int(vol))
+}
+
+func GetVolume() int64 {
+	vol, _ := bass.GetConfig(bass.CONFIG_GVOL_STREAM)
+	return vol
 }
 
 func Play() {

@@ -47,6 +47,16 @@ func createPlayingLayout() *fyne.Container {
 		bookArt,
 	))
 
+	a := container.NewBorder(
+		nil,
+		nil,
+		nil,
+		createVolumeSlider(),
+		playingVBox,
+	)
+
+	allBorder := container.NewBorder(nil, playTimeScrubber, nil, nil, a)
+
 	go func() {
 		for playingBook := range audio.UpdateNowPlayingChannel {
 			if bookTitle.Hidden {
@@ -61,7 +71,7 @@ func createPlayingLayout() *fyne.Container {
 			}
 		}
 	}()
-	return playingVBox
+	return allBorder
 }
 
 func initUI() {
@@ -70,6 +80,7 @@ func initUI() {
 	initPlayingPosition()
 	initPlayerButtons()
 	initFullBookLength()
+	initPlayTimeScrubberSlider()
 }
 
 func showUIItems() {
@@ -85,6 +96,9 @@ func showUIItems() {
 	playerButtonPlay.Show()
 	playerButtonFastForward.Show()
 	playerButtonSkipNext.Show()
+
+	showVolumeSlider()
+	showPlayTimeScrubber()
 }
 
 func hideUIItems() {
@@ -100,6 +114,9 @@ func hideUIItems() {
 	playerButtonPlay.Hide()
 	playerButtonFastForward.Hide()
 	playerButtonSkipNext.Hide()
+
+	hideVolumeSlider()
+	hidePlayTimeScrubber()
 }
 
 func initBookArt() {
@@ -163,7 +180,8 @@ func layoutPlayerButtons() *fyne.Container {
 		playerButtonFastForward,
 		playerButtonSkipNext,
 	)
-	return container.NewCenter(layout)
+	vbox := container.NewVBox(layout)
+	return container.NewCenter(vbox)
 }
 func clearCurrentlyPlaying() {
 	clearBookArt()
@@ -206,7 +224,7 @@ func updateBookFullLength(bookLength string) {
 }
 
 func updatePlayingPosition(p types.PlayingBook) {
-	playingPosition.Text = audio.SecondsToTimeText(audio.GetCurrentBookPlayingDuration(p))
+	playingPosition.Text = audio.SecondsToTimeText(audio.GetCurrentBookPlayTime())
 	playingPosition.Refresh()
 }
 

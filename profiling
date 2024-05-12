@@ -1,0 +1,15 @@
+in main.go:
+    - import: _ "net/http/pprof"
+    - place in main func:
+        go func() {
+		  log.Println(http.ListenAndServe("localhost:6060", nil))
+	    }()
+	- run your app and run any of the below
+
+
+go tool pprof http://localhost:6060/debug/pprof/profile?seconds=1
+
+go tool pprof http://localhost:6060/debug/pprof/heap
+
+curl -o trace.out http://localhost:6060/debug/pprof/trace?seconds=5
+go tool trace trace.out

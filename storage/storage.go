@@ -5,6 +5,7 @@ package storage
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"mamela/merror"
 	"mamela/types"
 	"os"
@@ -13,10 +14,13 @@ import (
 
 var StorageFile = "data.json"
 
+const jsonStrVolumeLevel = "volume_level"
+const defaultVolumeLevel = 5000 // this is bass's 50%
 type Store struct {
 	Root              string       `json:"root"`                // Folder where audio book folders can be found
 	BookList          []types.Book `json:"books"`               // Audio books in the root folder
 	CurrentBookFolder string       `json:"current_book_folder"` // Currently playing audio book
+	VolumeLevel       float64      `json:"volume_level"`        // The last set volume level
 }
 
 var Data Store = Store{}
@@ -45,14 +49,15 @@ func checkStorageFile() bool {
 				merror.ShowError("Error creating storage file", err)
 			}()
 		} else {
-			_, err = f.WriteString("{}")
-			f.Close()
+			_, err = f.WriteString("{\"" + jsonStrVolumeLevel + "\":" + fmt.Sprint(defaultVolumeLevel) + "}")
 			if err != nil {
 				go func() {
 					time.Sleep(time.Second * 3)
 					merror.ShowError("Error writing to storage file", err)
 				}()
 			}
+			Data.VolumeLevel = defaultVolumeLevel
+			f.Close()
 		}
 	}
 
@@ -102,4 +107,13 @@ func SaveBookListToStorageFile(bookList []types.Book) {
 func UpdateCurrentBook(bookPath string) {
 	Data.CurrentBookFolder = bookPath
 	SaveDataToStorageFile()
+}
+
+func SaveVolumeLevel(vol float64) {
+	Data.VolumeLevel = vol
+	SaveDataToStorageFile()
+}
+
+func GetVolumeLevel() float64 {
+	return Data.VolumeLevel
 }

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"log"
 	"mamela/audio"
 	"mamela/storage"
 	"mamela/ui"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 // Basically, this app plays audio books.
@@ -15,6 +18,9 @@ import (
 const appLabel = "Mamela"
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	// Load the storage file from disk, we are dong it here so that
 	// if there is any error then we can show it on the UI
 	storage.LoadStorageFile()
