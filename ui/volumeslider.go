@@ -11,13 +11,16 @@ import (
 
 var volumeSlider *widget.Slider
 
+const maxVolume = float64(10000)
+
+var currentVolume = float64(0)
+
 func init() {
-	volumeSlider = widget.NewSlider(0, 10000) // 10000 is bass's Stream global volume max level
+	volumeSlider = widget.NewSlider(currentVolume, maxVolume) // 10000 is bass's Stream global volume max level
 }
 
 func createVolumeSlider() *fyne.Container {
 	volumeSlider.Orientation = 1 // vertical
-	// vol := audio.GetVolume()
 	onDragVolumeSlider(volumeSlider)
 	hBox := container.NewHBox(volumeSlider, container.NewPadded())
 	return container.NewPadded(hBox)
@@ -25,8 +28,9 @@ func createVolumeSlider() *fyne.Container {
 
 func onDragVolumeSlider(slider *widget.Slider) {
 	slider.OnChangeEnded = func(f float64) {
-		audio.NotifyVolumeSliderDragged <- f
-		storage.SaveVolumeLevel(f)
+		currentVolume = f
+		audio.NotifyVolumeSliderDragged <- currentVolume
+		storage.SaveVolumeLevel(currentVolume)
 	}
 }
 
@@ -38,4 +42,25 @@ func showVolumeSlider() {
 	volumeSlider.Show()
 	volumeSlider.SetValue(storage.GetVolumeLevel())
 	audio.NotifyVolumeSliderDragged <- storage.GetVolumeLevel()
+}
+
+const volumeAdjustValue = float64(500)
+
+func adjustVolumeOnKeyPress(keyName string) {
+	switch keyName {
+	case "Up":
+		if volumeAdjustValue+currentVolume > maxVolume {
+			currentVolume = maxVolume
+		} else {
+			currentVolume += volumeAdjustValue
+		}
+	case "Down":
+		if currentVolume-volumeAdjustValue < 0 {
+			currentVolume = 0
+		} else {
+			currentVolume -= volumeAdjustValue
+		}
+	}
+	audio.NotifyVolumeSliderDragged <- currentVolume
+	volumeSlider.SetValue(currentVolume)
 }

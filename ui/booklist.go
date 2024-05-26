@@ -1,17 +1,14 @@
 package ui
 
 import (
+	"fmt"
 	"image/color"
 	"mamela/audio"
 	"mamela/buildconstraints"
-	"mamela/filetypes"
-	"mamela/merror"
+	"mamela/helpers"
 	"mamela/storage"
 	"mamela/types"
 	"os"
-	"path/filepath"
-	"slices"
-	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -21,10 +18,18 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dhowden/tag"
-	bass "github.com/pteich/gobass"
 )
 
+var notifyRootFolderSelected = make(chan bool)
+var loadingBooksTicker = time.NewTicker(500 * time.Millisecond)
+
+var refreshButton *widget.Button
 var bookListVBox *fyne.Container
+var bookListHeaderTxt *canvas.Text
+
+func init() {
+	loadingBooksTicker.Stop()
+}
 
 // Initialise part of the UI that lists audio books and listen to update events
 func initBookList() *fyne.Container {
@@ -38,7 +43,44 @@ func initBookList() *fyne.Container {
 	go func() {
 		for update := range audio.UpdateBookListChannel {
 			if update {
+				audio.Stop()
+				audio.ClearPlayer()
+				clearCurrentlyPlaying()
+				storage.ClearBooks()
+				audio.NotifyBookPlayTimeSliderDragged <- -1
 				updateBookList(true)
+				notifyRootFolderSelected <- false
+			}
+		}
+	}()
+
+	dots := 1
+	go func() {
+		for range loadingBooksTicker.C {
+			switch dots {
+			case 1:
+				bookListHeaderTxt.Text = "Loading."
+			case 2:
+				bookListHeaderTxt.Text = "Loading.."
+			case 3:
+				bookListHeaderTxt.Text = "Loading..."
+			}
+			bookListHeaderTxt.Refresh()
+			dots++
+			if dots == 4 {
+				dots = 1
+			}
+		}
+	}()
+	go func() {
+		for runAnimation := range notifyRootFolderSelected {
+			if runAnimation {
+				loadingBooksTicker.Reset(500 * time.Millisecond)
+			} else {
+				loadingBooksTicker.Stop()
+				updateBookListHeader()
+				refreshButton.Show()
+				// refreshButton.Refresh()
 			}
 		}
 	}()
@@ -46,20 +88,23 @@ func initBookList() *fyne.Container {
 	return bookListContainer
 }
 
-func setBookListHeader() string {
+func updateBookListHeader() {
 	if len(storage.Data.BookList) > 0 {
-		return "Loaded Books"
+		bookListHeaderTxt.Text = "Loaded Books"
+	} else {
+		// TODO find a better we of doing the padding below
+		bookListHeaderTxt.Text = "Load Books     "
 	}
-	// TODO find a better we of doing the padding below
-	return "Load Books     "
+	bookListHeaderTxt.Refresh()
 }
 
 func generateBookListContainerTop() *fyne.Container {
-	bookListHeaderTxt := canvas.NewText(setBookListHeader(), theme.ForegroundColor())
+	bookListHeaderTxt = canvas.NewText("", theme.ForegroundColor())
 	bookListHeaderTxt.TextSize = 24
 	bookListHeaderTxt.TextStyle.Bold = true
 	spacer := canvas.NewText("    ", color.Transparent)
-	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(createRefreshButton()))
+	refreshButton = createRefreshButton()
+	top := container.NewHBox(bookListHeaderTxt, spacer, container.NewVBox(refreshButton))
 	return top
 }
 
@@ -74,6 +119,8 @@ func initBookPane(bookListVBox *fyne.Container) *fyne.Container {
 func createRefreshButton() *widget.Button {
 	icon := theme.ViewRefreshIcon()
 	button := widget.NewButtonWithIcon("", icon, func() {
+		notifyRootFolderSelected <- true
+		refreshButton.Hide()
 		refreshBookList()
 	})
 	return button
@@ -88,17 +135,25 @@ func refreshBookList() {
 // to the storage file
 func updateBookList(readRootFolder bool) {
 	if storage.Data.Root != "" {
+		bookListVBox.RemoveAll()
+		bookListVBox.Refresh()
 		if readRootFolder {
 			parseRootFolder()
 		}
-		bookListVBox.Objects = bookListVBox.Objects[:0]
-		for _, v := range storage.Data.BookList {
-			bookTileLayout := NewMyListItemWidget(v)
+		for _, book := range storage.Data.BookList {
+			if book.Path == "" {
+				fmt.Println("!!!!!!!!!!!1=================")
+			}
+			// if book.Path != "" {
+			book.Metadata = getFileMetaData(book)
+			bookTileLayout := NewMyListItemWidget(book)
 			bookListVBox.Add(bookTileLayout)
-			loadPreviousBookOnLoad(v.Path, bookTileLayout.Button)
+			loadPreviousBookOnLoad(book.Path, bookTileLayout.Button)
+			// }
 		}
 		bookListVBox.Refresh()
 	}
+	updateBookListHeader()
 }
 
 func loadPreviousBookOnLoad(bookFolderName string, bookLoadButton *widget.Button) {
@@ -117,56 +172,11 @@ func loadPreviousBookOnLoad(bookFolderName string, bookLoadButton *widget.Button
 }
 
 func parseRootFolder() {
-	var bookList = []types.Book{}
-	rootFolderEntries, err := os.ReadDir(storage.Data.Root)
-	if err != nil {
-		merror.ShowError("Could not read root folder", err)
+	if storage.Data.Root == "" {
 		return
 	}
-
-	for _, folder := range rootFolderEntries {
-		isAValidAudioBook := false
-		if folder.IsDir() {
-			bookFullPath := storage.Data.Root + buildconstraints.PathSeparator + folder.Name()
-			bookFolder, err := os.ReadDir(bookFullPath)
-			if err == nil {
-				highestQuality := int64(0)
-				folderArt := ""
-				var book types.Book
-				for _, bookFile := range bookFolder {
-					i, err := bookFile.Info()
-					if err == nil {
-						if i.Mode().IsRegular() {
-							name := strings.ToLower(i.Name())
-							if slices.Contains(filetypes.AllowedFileTypes, filepath.Ext(name)) {
-								isAValidAudioBook = true
-								chapter := types.Chapter{
-									FileName:        i.Name(),
-									LengthInSeconds: getChapterLengthInSeconds(bookFullPath, i.Name()),
-								}
-								book.Chapters = append(book.Chapters, chapter)
-							} else if slices.Contains(filetypes.BookArtFileTypes, filepath.Ext(name)) {
-								// If the folder contains an image file, get the one of best quality
-								if i.Size() > highestQuality {
-									highestQuality = i.Size()
-									folderArt = i.Name()
-								}
-							}
-						}
-					}
-				}
-
-				if isAValidAudioBook {
-					book.Title = folder.Name()
-					book.Path = folder.Name()
-					book.FolderArt = folderArt
-					book.FullLengthSeconds = getFullBookLengthSeconds(book.Chapters)
-					book.Metadata = getFileTag(book)
-					bookList = append(bookList, book)
-				}
-			}
-		}
-	}
+	rootFolderEntries := helpers.ReadRootDirectory()
+	bookList := helpers.GetBookList(rootFolderEntries)
 	storage.SaveBookListToStorageFile(bookList)
 }
 
@@ -176,36 +186,12 @@ func getBookFile(b types.Book) *os.File {
 	return f
 }
 
-func getFileTag(b types.Book) tag.Metadata {
-	f := getBookFile(b)
+func getFileMetaData(b types.Book) tag.Metadata {
 	var meta tag.Metadata = nil
+	f := getBookFile(b)
+	defer f.Close()
 	if f != nil {
 		meta, _ = tag.ReadFrom(f)
-		f.Close()
 	}
 	return meta
-}
-
-func getChapterLengthInSeconds(fullPath string, fileName string) float64 {
-	length := float64(0)
-	c, err := bass.StreamCreateFile(fullPath+buildconstraints.PathSeparator+fileName, 0, bass.AsyncFile)
-	if err == nil {
-		bytesLen, err := c.GetLength(bass.POS_BYTE)
-		if err == nil {
-			t, err := c.Bytes2Seconds(bytesLen)
-			if err == nil {
-				length = t
-			}
-		}
-	}
-	c.Free()
-	return length
-}
-
-func getFullBookLengthSeconds(chapters []types.Chapter) float64 {
-	length := float64(0)
-	for i := 0; i < len(chapters); i++ {
-		length = length + chapters[i].LengthInSeconds
-	}
-	return length
 }

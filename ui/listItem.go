@@ -3,6 +3,7 @@ package ui
 import (
 	"bytes"
 	"image"
+	"image/color"
 	"mamela/audio"
 	"mamela/buildconstraints"
 	"mamela/bundled"
@@ -53,47 +54,56 @@ var funcChanFolderArtUpdaterCallBack = func(playingBook types.PlayingBook) {
 
 // TODO find a better way to do the button icon and text placement
 func NewMyListItemWidget(b types.Book) *MyListItemWidget {
+	item := &MyListItemWidget{}
+
 	title := cases.Title(language.English).String(b.Title)
 	var button *widget.Button
 	bookImage := getBookImage(b)
 	var img image.Image
 
-	if bookImage != nil {
-		img, _, _ = image.Decode(bytes.NewReader(bookImage))
-	}
+	img, _, _ = image.Decode(bytes.NewReader(bookImage))
 
-	var res = &fyne.StaticResource{
-		StaticName:    "",
-		StaticContent: []byte{},
-	}
+	// var res = &fyne.StaticResource{
+	// 	StaticName:    "",
+	// 	StaticContent: []byte{},
+	// }
 
-	callback := func() {
+	onTapped := func() {
 		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
 		audio.LoadAndPlay(playingBook, false, true, funcChanFolderArtUpdaterCallBack)
 		audio.NotifyNewBookLoaded <- audio.GetCurrentBookFullLength()
 	}
 
-	if bookImage != nil {
-		res.StaticContent = bookImage
-		button = widget.NewButtonWithIcon("", res, callback)
-		title = "       " + cases.Title(language.English).String(b.Title)
-	} else {
-		button = widget.NewButton("", callback)
-	}
-	button.Alignment = widget.ButtonAlignLeading
+	// res.StaticContent = bookImage
+	button = widget.NewButton("", onTapped)
 
-	item := &MyListItemWidget{
+	item = &MyListItemWidget{
 		Icon:   canvas.NewImageFromImage(img),
 		Title:  widget.NewLabel(title),
 		Button: button,
 	}
-	item.Title.Truncation = fyne.TextTruncateEllipsis
+
+	// item.Title.Truncation = fyne.TextTruncateEllipsis
+	item.Title.Wrapping = fyne.TextWrapWord
 	item.ExtendBaseWidget(item)
 
 	return item
 }
 
 func (item *MyListItemWidget) CreateRenderer() fyne.WidgetRenderer {
-	stack := container.NewStack(item.Button, item.Title)
-	return widget.NewSimpleRenderer(stack)
+	c := fyne.NewContainer(item.Icon) //, item.Title)
+	label := widget.NewLabel("\n\n")  // ensure minimum height for the AllItemsStack
+	allItemsStack := container.NewStack(
+		item.Button,
+		c,
+		container.NewBorder(nil, nil, canvas.NewText("              ", color.Opaque), nil, item.Title), // TODO: find a better way of doing this
+		label,
+	)
+
+	item.Icon.Resize(fyne.Size{Width: 50, Height: 50})
+
+	item.Title.Move(fyne.Position{X: 60, Y: 0})
+	item.Icon.Move(fyne.Position{X: 6, Y: 11})
+
+	return widget.NewSimpleRenderer(allItemsStack)
 }

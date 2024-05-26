@@ -13,7 +13,7 @@ type Player struct {
 	currentBook types.PlayingBook
 	channel     bass.Channel
 	playing     bool
-	state       int
+	State       int
 }
 
 func (p *Player) play() {
@@ -24,28 +24,27 @@ func (p *Player) play() {
 			UIUpdateTicker.Reset(PlayingBookTickerDuration)
 			CurrentBookPositionUpdateTicker.Reset(CurrentBookPositionTickerDuration)
 			p.playing = true
-			p.state = PLAYING
+			p.State = PLAYING
 			storage.UpdateCurrentBook(p.currentBook.Path)
+			updateUICurrentlyPlayingInfo()
 		}
-		merror.ShowError("", err)
+		merror.ShowError("Cannot play", err)
 	}
 }
 
 func (p *Player) pause() {
 	if player.channel != 0 {
 		active, err := player.channel.IsActive()
-		if err != nil {
-			merror.ShowError("", err)
-		} else {
+		if err == nil {
 			if active == bass.ACTIVE_PLAYING {
 				saveCurrentPlayingBookPositionToDisk()
 				err := p.channel.Pause()
+				merror.ShowError("Error pausing", err)
 				p.playing = false
-				p.state = PAUSED
+				p.State = PAUSED
 				UIUpdateTicker.Stop()
 				CurrentBookPositionUpdateTicker.Stop()
-				merror.ShowError("", err)
-				merror.PanicError(err)
+				updateUICurrentlyPlayingInfo()
 			}
 		}
 	}
@@ -54,18 +53,17 @@ func (p *Player) pause() {
 func (p *Player) stop() {
 	if p.channel != 0 {
 		err := p.channel.Stop()
-		if err != nil {
-			merror.ShowError("", err)
-		} else {
+		if err == nil {
 			saveCurrentPlayingBookPositionToDisk()
 			UIUpdateTicker.Stop()
 			CurrentBookPositionUpdateTicker.Stop()
 			p.playing = false
-			p.state = STOPPED
+			p.State = STOPPED
 			p.currentBook.Position = time.Duration(0)
 			p.currentBook.CurrentChapter = 0
 			p.channel.SetPosition(0, bass.POS_BYTE)
 			updateUIOnStop()
+			updateUICurrentlyPlayingInfo()
 		}
 	}
 }
@@ -112,17 +110,15 @@ func (p *Player) fastRewind() {
 
 func (p *Player) fastForward() {
 	if player.channel != 0 {
-		active, err := player.channel.IsActive()
-		merror.ShowError("", err)
-		merror.PanicError(err)
+		active, _ := player.channel.IsActive()
 		if active == bass.ACTIVE_PLAYING {
 			bytePositionAmount, err := p.channel.Seconds2Bytes(fastForwardRewindAmount)
 			if err != nil {
-				merror.ShowError("", err)
+				merror.ShowError("Cannot convert seconds to bytes", err)
 			} else {
 				currentBytePosition, err := p.channel.GetPosition(bass.POS_BYTE)
 				if err != nil {
-					merror.ShowError("", err)
+					merror.ShowError("Cannot get byte position", err)
 				} else {
 					byteLength, err := p.channel.GetLength(bass.POS_BYTE)
 					if err == nil {
@@ -160,6 +156,12 @@ func (p *Player) setVolume(vol float64) {
 func GetVolume() int64 {
 	vol, _ := bass.GetConfig(bass.CONFIG_GVOL_STREAM)
 	return vol
+}
+
+func ClearPlayer() {
+	if player.channel != 0 {
+		player.channel.Free()
+	}
 }
 
 func Play() {

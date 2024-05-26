@@ -20,11 +20,12 @@ import (
 
 var bookArt *canvas.Image
 var bookTitle *widget.Label
+var chapterTitle *widget.Label
 var bookFullLength *canvas.Text
 var playingPosition *canvas.Text
 var playerButtonPlay *widget.Button
 var playerButtonPause *widget.Button
-var playerButtonStop *widget.Button
+
 var playerButtonFastRewind *widget.Button
 var playerButtonFastForward *widget.Button
 var playerButtonSkipNext *widget.Button
@@ -44,7 +45,7 @@ func createPlayingLayout() *fyne.Container {
 		containerPositionDetails,
 		nil,
 		nil,
-		bookArt,
+		container.NewBorder(nil, chapterTitle, nil, nil, bookArt),
 	))
 
 	a := container.NewBorder(
@@ -67,7 +68,6 @@ func createPlayingLayout() *fyne.Container {
 				clearCurrentlyPlaying()
 			} else {
 				updatePlaying(playingBook)
-				MainWindow.Content().Refresh()
 			}
 		}
 	}()
@@ -76,6 +76,7 @@ func createPlayingLayout() *fyne.Container {
 
 func initUI() {
 	initTitle()
+	initChapterTitle()
 	initBookArt()
 	initPlayingPosition()
 	initPlayerButtons()
@@ -89,10 +90,10 @@ func showUIItems() {
 	bookFullLength.Show()
 	playingPosition.Show()
 
+	chapterTitle.Show()
 	playerButtonSkipPrevious.Show()
 	playerButtonFastRewind.Show()
 	playerButtonPause.Show()
-	playerButtonStop.Show()
 	playerButtonPlay.Show()
 	playerButtonFastForward.Show()
 	playerButtonSkipNext.Show()
@@ -107,10 +108,10 @@ func hideUIItems() {
 	bookFullLength.Hide()
 	playingPosition.Hide()
 
+	chapterTitle.Hide()
 	playerButtonSkipPrevious.Hide()
 	playerButtonFastRewind.Hide()
 	playerButtonPause.Hide()
-	playerButtonStop.Hide()
 	playerButtonPlay.Hide()
 	playerButtonFastForward.Hide()
 	playerButtonSkipNext.Hide()
@@ -125,18 +126,21 @@ func initBookArt() {
 }
 
 func initTitle() {
-	// bookTitle = canvas.NewText("", theme.ForegroundColor())
 	bookTitle = widget.NewLabel("")
-	// bookTitle.TextSize = 16
 	bookTitle.Wrapping = fyne.TextWrapBreak
 	bookTitle.TextStyle.Bold = true
 	bookTitle.Alignment = fyne.TextAlignCenter
 }
 
+func initChapterTitle() {
+	chapterTitle = widget.NewLabel("")
+	chapterTitle.Wrapping = fyne.TextWrapWord
+	chapterTitle.Alignment = fyne.TextAlignCenter
+}
+
 func initFullBookLength() {
 	bookFullLength = canvas.NewText("", theme.ForegroundColor())
 	bookFullLength.TextSize = 18
-	// bookFullLength.TextStyle.Bold = true
 	bookFullLength.Alignment = fyne.TextAlignCenter
 }
 
@@ -152,9 +156,6 @@ func initPlayerButtons() {
 	})
 	playerButtonPause = widget.NewButtonWithIcon("", theme.MediaPauseIcon(), func() {
 		audio.Pause()
-	})
-	playerButtonStop = widget.NewButtonWithIcon("", theme.MediaStopIcon(), func() {
-		audio.Stop()
 	})
 	playerButtonFastRewind = widget.NewButtonWithIcon("", theme.MediaFastRewindIcon(), func() {
 		audio.FastRewind()
@@ -175,7 +176,6 @@ func layoutPlayerButtons() *fyne.Container {
 		playerButtonSkipPrevious,
 		playerButtonFastRewind,
 		playerButtonPause,
-		playerButtonStop,
 		playerButtonPlay,
 		playerButtonFastForward,
 		playerButtonSkipNext,
@@ -186,15 +186,25 @@ func layoutPlayerButtons() *fyne.Container {
 func clearCurrentlyPlaying() {
 	clearBookArt()
 	updateTitle("")
+	updateChapterTitle("")
 	clearPlayingPosition()
 	updateBookFullLength("")
+	hideUIItems()
 }
 
 func updatePlaying(p types.PlayingBook) {
 	updateTitle(p.Title)
+	updateChapterTitle(p.Chapters[p.CurrentChapter].FileName)
 	updatePlayingPosition(p)
 	d := time.Duration(math.Round(p.FullLengthSeconds * 1000000000))
 	updateBookFullLength(audio.SecondsToTimeText(d))
+	if audio.GetState() == audio.PAUSED || audio.GetState() == audio.STOPPED {
+		playerButtonPlay.Show()
+		playerButtonPause.Hide()
+	} else if audio.GetState() == audio.PLAYING {
+		playerButtonPlay.Hide()
+		playerButtonPause.Show()
+	}
 }
 
 func clearBookArt() {
@@ -216,6 +226,11 @@ func updateBookArt(picBytes []byte) {
 func updateTitle(title string) {
 	bookTitle.Text = cases.Title(language.English).String(title)
 	bookTitle.Refresh()
+}
+
+func updateChapterTitle(title string) {
+	chapterTitle.Text = cases.Title(language.English).String(title)
+	chapterTitle.Refresh()
 }
 
 func updateBookFullLength(bookLength string) {

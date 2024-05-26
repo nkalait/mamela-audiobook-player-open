@@ -7,32 +7,37 @@ import (
 )
 
 var playTimeScrubber *widget.Slider
+var maxLength = float64(0)
+var currentScrubberPosition = float64(0)
 
 func init() {
-	playTimeScrubber = widget.NewSlider(0, 0)
+	playTimeScrubber = widget.NewSlider(0, maxLength)
 }
 
 func initPlayTimeScrubberSlider() {
 	playTimeScrubber.Orientation = 0 // horizontal
 
-	playTimeScrubber.SetValue(0)
+	playTimeScrubber.SetValue(currentScrubberPosition)
 	onScrubberDrag()
 
 	go func() {
-		for length := range audio.NotifyNewBookLoaded {
-			playTimeScrubber.Max = length
+		for l := range audio.NotifyNewBookLoaded {
+			maxLength = l
+			playTimeScrubber.Max = maxLength
 		}
 	}()
 	go func() {
 		for pos := range audio.NotifyBookPlayTime {
 			playTimeScrubber.Value = pos.Seconds()
+			playTimeScrubber.Refresh()
 		}
 	}()
 }
 
 func onScrubberDrag() {
 	playTimeScrubber.OnChangeEnded = func(f float64) {
-		audio.NotifyBookPlayTimeSliderDragged <- f
+		currentScrubberPosition = f
+		audio.NotifyBookPlayTimeSliderDragged <- currentScrubberPosition
 	}
 }
 
@@ -42,4 +47,13 @@ func hidePlayTimeScrubber() {
 
 func showPlayTimeScrubber() {
 	playTimeScrubber.Show()
+}
+
+func adjustPlayTimeScrubberOnKeyPress(keyName string) {
+	switch keyName {
+	case "Right":
+		audio.FastForward()
+	case "Left":
+		audio.FastRewind()
+	}
 }

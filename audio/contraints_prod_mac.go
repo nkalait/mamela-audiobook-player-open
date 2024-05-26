@@ -13,7 +13,7 @@ import (
 func init() {
 	ex, err := os.Executable()
 	if err != nil {
-		merror.ShowError("", err)
+		merror.ShowError("Cannot get executable file path", err)
 	}
 	exPath := filepath.Dir(ex)
 	exPathArr := strings.Split(exPath, buildconstraints.PathSeparator)

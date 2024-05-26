@@ -12,7 +12,7 @@ import (
 func init() {
 	exPath, err := filepath.Abs(filepath.Dir(os.Args[0])) //get the current working directory
 	if err != nil {
-		merror.ShowError("", err)
+		merror.ShowError("Cannot get executable file path", err)
 	}
 	LibDir = exPath + buildconstraints.PathSeparator + "lib"
 	LibExt = ".dll"

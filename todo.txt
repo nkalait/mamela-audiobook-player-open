@@ -1,10 +1,9 @@
-- Playing is slow, try doing it through buffering
-- Seeking is very slow, fix it
+!! have a channel to listen for ui shown before showing any merror.showerror(); buffered channel
+!! fatal error in getChapterLengthInSeconds(); when bass cannot read a file.... I think
+
+- have another db that stores the progress of books, ie position or finished, even after the user changes the root folder
 - Access storage using getter functions
-- Show working animation when loading a new directory
 - Highlight currently playing book
-- stop playing and clear storage.Data.BookList ???
-- folder art for files with an imbedded images don't show up if not forcing update
 - test code coverage
 - FINISH UP WORKING WITH DARK AND LIGHT THEMES
 - for files with chapter information embedded in them, allow skipping to next/previous chapter (will use ffmpeg for now)
