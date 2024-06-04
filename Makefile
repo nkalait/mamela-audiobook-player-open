@@ -13,9 +13,7 @@ build_mac:
 	cp lib/mac/libbassopus.dylib ${LIB_MAC}
 
 #	GOARCH=amd64 GOOS=darwin go build -tags debug -o app/${BINARY_NAME_MAC}-darwin main.go
-	GOARCH=amd64 GOOS=darwin CGO_LDFLAGS="-L lib/mac -rpath lib/mac" go build -tags working -o app/${BINARY_NAME_MAC}-darwin main.go
-#	GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux main.go
-#	GOARCH=amd64 GOOS=windows go build -o ${BINARY_NAME}-windows main.go
+	GOOS=darwin CGO_LDFLAGS="-L lib/mac -rpath lib/mac" go build -tags=working -o app/${BINARY_NAME_MAC}-darwin main.go
 
 #	install_name_tool -change @loader_path/libbass.dylib @loader_path/lib/mac/libbass.dylib app/mamela_audiobook_player-darwin
 	cd app && ./${BINARY_NAME_MAC}-darwin
@@ -39,7 +37,7 @@ build_linux64:
 	cp lib/linux64/libbass_aac.so ${LIB_LINUX64}
 	cp lib/linux64/libbassopus.so ${LIB_LINUX64}
 	
-	GOARCH=amd64 GOOS=linux go build -tags working -o app/${BINARY_NAME_LINUX64} -tags=prod_linux64 main.go
+	GOOS=linux go build -tags working -tags=prod_linux64 -o app/${BINARY_NAME_LINUX64} main.go
 	cd app && ./${BINARY_NAME_LINUX64}
 
 #########################################################################
@@ -64,7 +62,6 @@ PACK_LIB_MAC=${PACK_APP_NAME_MAC}/Contents/lib/mac
 APP_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/MacOS
 PACK_DB_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/db
 pack_mac:
-#	CGO_LDFLAGS="-L lib/mac -rpath lib/mac" go build -tags working -o app/${BINARY_NAME_MAC}-darwin main.go
 	CGO_LDFLAGS="-L lib/mac" fyne package -os darwin -appID mamela.co.ls --tags prod_mac --release 
 	mv mamela.app ${PACK_APP_NAME_MAC}
 	mkdir -p ${PACK_LIB_MAC}
