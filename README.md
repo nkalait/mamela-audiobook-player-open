@@ -1,6 +1,12 @@
 # Mamela Audio Book Player
 ![example image](https://github.com/nkalait/mamela-audiobook-player/blob/main/image.jpg?raw=true)
 
+
+
+https://github.com/nkalait/mamela-audiobook-player-open/assets/22393956/be4cc43e-2a0a-453d-9854-3c86d45e432d
+
+
+
 The aim is to build, using **Go**, an audio book player that works just right on Linux, Mac, and Windows. Mamela is a GUI application built with **fyne** (https://fyne.io) for the GUI and **BASS** (https://www.un4seen.com)  for playing audio. For those interested to know, **"mamela"** is a [Sesotho](https://en.wikipedia.org/wiki/Sotho_language) word for **"listen"**
 
 ***Any and all assistance is welcome :)*** 
