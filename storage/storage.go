@@ -199,6 +199,32 @@ func SaveBookListToStorageFile(bookList []types.Book) {
 	SaveDataToStorageFile()
 }
 
+// DeleteBook removes a book entry from storage by its path and persists the change.
+func DeleteBook(path string) bool {
+	if path == "" {
+		return false
+	}
+	lowerPath := strings.ToLower(path)
+	filtered := make([]types.Book, 0, len(Data.BookList))
+	removed := false
+	for _, book := range Data.BookList {
+		if strings.ToLower(book.Path) == lowerPath {
+			removed = true
+			continue
+		}
+		filtered = append(filtered, book)
+	}
+	if !removed {
+		return false
+	}
+	Data.BookList = filtered
+	if strings.EqualFold(Data.CurrentBookFolder, path) {
+		Data.CurrentBookFolder = ""
+	}
+	SaveDataToStorageFile()
+	return true
+}
+
 func mergeBookData(existing, incoming types.Book) types.Book {
 	merged := existing
 	merged.Title = incoming.Title

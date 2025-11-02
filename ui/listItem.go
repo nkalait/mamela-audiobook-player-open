@@ -2,6 +2,7 @@ package ui
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"mamela/audio"
@@ -10,10 +11,14 @@ import (
 	"mamela/storage"
 	"mamela/types"
 	"os"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dhowden/tag"
 	"golang.org/x/text/cases"
@@ -22,9 +27,10 @@ import (
 
 type MyListItemWidget struct {
 	widget.BaseWidget
-	Icon   *canvas.Image
-	Title  *widget.Label
-	Button *widget.Button
+	Icon         *canvas.Image
+	Title        *widget.Label
+	Button       *widget.Button
+	DeleteButton *widget.Button
 }
 
 func getBookImage(book types.Book) []byte {
@@ -89,10 +95,33 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 		button.Disable()
 	}
 
+	deleteButton := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+		if MainWindow == nil {
+			return
+		}
+		message := fmt.Sprintf("Remove \"%s\" from the library? This only deletes stored metadata.", b.Title)
+		dialog.NewConfirm("Delete Book", message, func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			if strings.EqualFold(storage.Data.CurrentBookFolder, b.Path) {
+				audio.ClearCurrentlyPlaying()
+			}
+			if storage.DeleteBook(b.Path) {
+				updateBookList(false)
+			}
+		}, MainWindow).Show()
+	})
+	deleteButton.Importance = widget.DangerImportance
+	if b.Missing {
+		deleteButton.Enable()
+	}
+
 	item = &MyListItemWidget{
-		Icon:   canvas.NewImageFromImage(img),
-		Title:  widget.NewLabel(title),
-		Button: button,
+		Icon:         canvas.NewImageFromImage(img),
+		Title:        widget.NewLabel(title),
+		Button:       button,
+		DeleteButton: deleteButton,
 	}
 
 	// item.Title.Truncation = fyne.TextTruncateEllipsis
@@ -105,11 +134,16 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 func (item *MyListItemWidget) CreateRenderer() fyne.WidgetRenderer {
 	c := fyne.NewContainer(item.Icon) //, item.Title)
 	label := widget.NewLabel("\n\n")  // ensure minimum height for the AllItemsStack
+	deleteOverlay := container.NewVBox(
+		container.NewHBox(layout.NewSpacer(), item.DeleteButton),
+		layout.NewSpacer(),
+	)
 	allItemsStack := container.NewStack(
 		item.Button,
 		c,
 		container.NewBorder(nil, nil, canvas.NewText("              ", color.Opaque), nil, item.Title), // TODO: find a better way of doing this
 		label,
+		deleteOverlay,
 	)
 
 	item.Icon.Resize(fyne.Size{Width: 50, Height: 50})
