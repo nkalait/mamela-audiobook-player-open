@@ -9,7 +9,6 @@ LIB_MAC=app/lib/mac
 build_mac:
 	mkdir -p ${LIB_MAC}
 	cp lib/mac/libbass.dylib ${LIB_MAC}
-	cp lib/mac/libbass_aac.dylib ${LIB_MAC}
 	cp lib/mac/libbassopus.dylib ${LIB_MAC}
 
 #	GOARCH=amd64 GOOS=darwin go build -tags debug -o app/${BINARY_NAME_MAC}-darwin main.go
@@ -66,7 +65,6 @@ pack_mac:
 	mv mamela.app ${PACK_APP_NAME_MAC}
 	mkdir -p ${PACK_LIB_MAC}
 	cp lib/mac/libbass.dylib ${PACK_LIB_MAC}
-	cp lib/mac/libbass_aac.dylib ${PACK_LIB_MAC}
 	cp lib/mac/libbassopus.dylib ${PACK_LIB_MAC}
 	mkdir -p ${PACK_DB_DIR_MAC}
 
