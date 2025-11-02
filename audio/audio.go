@@ -13,10 +13,6 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-
-
-
-
 const (
 	PAUSED = iota
 	PLAYING
@@ -89,11 +85,12 @@ func setPlayTimeScrubberDragListener() {
 				if originalState == PLAYING {
 					player.pause()
 				}
-				posDuration := time.Duration(0)
+				posDuration := time.Duration(pos * float64(time.Second))
 				targetBytePos := 0
-				if pos != 0 {
-					posDuration = time.Duration(pos * 1000000000)
+				if pos > 0 {
 					targetBytePos = getTargetPositionInBytes(posDuration)
+				} else {
+					resetToBeginning()
 				}
 				err := player.channel.SetPosition(targetBytePos, bass.POS_BYTE)
 				if err != nil {
@@ -103,6 +100,7 @@ func setPlayTimeScrubberDragListener() {
 				if originalState == PLAYING {
 					player.play()
 				}
+				saveDraggedPositionToDisk(posDuration)
 			}
 		}
 	}()
@@ -128,6 +126,20 @@ func saveCurrentPlayingBookPositionToDisk() {
 	}
 }
 
+func saveDraggedPositionToDisk(pos time.Duration) {
+	if len(storage.Data.BookList) == 0 {
+		return
+	}
+	idx := slices.IndexFunc(storage.Data.BookList, func(b types.Book) bool {
+		return b.Path == player.currentBook.Path
+	})
+	if idx == -1 {
+		return
+	}
+	storage.Data.BookList[idx].Position = pos
+	storage.SaveDataToStorageFile()
+}
+
 // Unload loaded Bass plugins and free all resources used by Bass
 func tearDown(plugins []uint32) {
 	for _, p := range plugins {
@@ -143,8 +155,6 @@ func initBass() {
 	bass.SetVolume(100)
 	BassInitiatedChan <- true
 }
-
-
 
 // Start listening to audio playing event and exit event
 func StartChannelListener() {
@@ -361,6 +371,15 @@ func getTargetPositionInBytes(targetPosition time.Duration) int {
 	}
 
 	return bytePos
+}
+
+func resetToBeginning() {
+	if len(player.currentBook.Chapters) == 0 {
+		return
+	}
+	player.currentBook.CurrentChapter = 0
+	player.currentBook.Position = 0
+	loadAudioBookFile(storage.Data.Root + buildconstraints.PathSeparator + player.currentBook.Path + buildconstraints.PathSeparator + player.currentBook.Chapters[0].FileName)
 }
 
 func skipToNextFile(p *Player, forceSkip bool, continuePlaying bool, setPreviousPosition bool) bool {
