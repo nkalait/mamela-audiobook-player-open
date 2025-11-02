@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dhowden/tag"
 	"golang.org/x/text/cases"
@@ -30,7 +29,40 @@ type MyListItemWidget struct {
 	Icon         *canvas.Image
 	Title        *widget.Label
 	Button       *widget.Button
-	DeleteButton *widget.Button
+	DeleteButton *deleteButton
+}
+
+var deleteButtonIcon = fyne.NewStaticResource("delete_small.svg", []byte(`
+<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#81494a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 4.5V3.8c0-.5.4-.9.9-.9h4.2c.5 0 .9.4.9.9v.7"/>
+    <path d="M3.5 4.5h9"/>
+    <path d="M5.2 5.8v6.2c0 .7.5 1.2 1.2 1.2h3.2c.7 0 1.2-.5 1.2-1.2V5.8"/>
+    <path d="M7.2 7v4.2"/>
+    <path d="M9.1 7v4.2"/>
+  </g>
+</svg>
+`))
+
+type deleteButton struct {
+	widget.Button
+	size fyne.Size
+}
+
+func newDeleteButton(tapped func()) *deleteButton {
+	b := &deleteButton{
+		size: fyne.NewSize(16, 16),
+	}
+	b.Icon = deleteButtonIcon
+	b.Importance = widget.LowImportance
+	b.Alignment = widget.ButtonAlignCenter
+	b.OnTapped = tapped
+	b.ExtendBaseWidget(b)
+	return b
+}
+
+func (b *deleteButton) MinSize() fyne.Size {
+	return b.size
 }
 
 func getBookImage(book types.Book) []byte {
@@ -95,7 +127,7 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 		button.Disable()
 	}
 
-	deleteButton := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+	deleteButton := newDeleteButton(func() {
 		if MainWindow == nil {
 			return
 		}
@@ -112,10 +144,6 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 			}
 		}, MainWindow).Show()
 	})
-	deleteButton.Importance = widget.DangerImportance
-	if b.Missing {
-		deleteButton.Enable()
-	}
 
 	item = &MyListItemWidget{
 		Icon:         canvas.NewImageFromImage(img),
@@ -132,16 +160,20 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 }
 
 func (item *MyListItemWidget) CreateRenderer() fyne.WidgetRenderer {
-	c := fyne.NewContainer(item.Icon) //, item.Title)
-	label := widget.NewLabel("\n\n")  // ensure minimum height for the AllItemsStack
+	c := container.NewWithoutLayout(item.Icon) //, item.Title)
+	label := widget.NewLabel("\n\n")           // ensure minimum height for the AllItemsStack
 	deleteOverlay := container.NewVBox(
-		container.NewHBox(layout.NewSpacer(), item.DeleteButton),
+		container.NewHBox(layout.NewSpacer(), container.NewPadded(item.DeleteButton)),
 		layout.NewSpacer(),
 	)
 	allItemsStack := container.NewStack(
 		item.Button,
 		c,
-		container.NewBorder(nil, nil, canvas.NewText("              ", color.Opaque), nil, item.Title), // TODO: find a better way of doing this
+		container.NewBorder(
+			nil, nil,
+			canvas.NewText("              ", color.Opaque),
+			nil,
+			container.NewPadded(item.Title)), // TODO: find a better way of doing this
 		label,
 		deleteOverlay,
 	)
