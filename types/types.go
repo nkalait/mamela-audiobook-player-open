@@ -21,6 +21,7 @@ type Book struct {
 	FullLengthSeconds float64
 	Metadata          tag.Metadata
 	Position          time.Duration // Position in the currently playing file
+	Missing           bool          // True when the book folder is not currently available
 }
 
 // An audio book that is currently playing

@@ -10,6 +10,8 @@ import (
 	"mamela/merror"
 	"mamela/types"
 	"os"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -37,7 +39,9 @@ func LoadStorageFile() {
 }
 
 func ClearBooks() {
-	Data.BookList = []types.Book{}
+	for i := range Data.BookList {
+		Data.BookList[i].Missing = true
+	}
 	Data.CurrentBookFolder = ""
 	SaveDataToStorageFile()
 }
@@ -156,8 +160,54 @@ func SaveDataToStorageFile() bool {
 
 // Update list of books in storage file
 func SaveBookListToStorageFile(bookList []types.Book) {
-	Data.BookList = bookList
+	existing := make(map[string]types.Book, len(Data.BookList))
+	for _, book := range Data.BookList {
+		existing[strings.ToLower(book.Path)] = book
+	}
+
+	merged := make([]types.Book, 0, len(bookList)+len(Data.BookList))
+	added := make(map[string]struct{}, len(bookList))
+
+	for _, incoming := range bookList {
+		key := strings.ToLower(incoming.Path)
+		if current, ok := existing[key]; ok {
+			merged = append(merged, mergeBookData(current, incoming))
+		} else {
+			incoming.Missing = false
+			merged = append(merged, incoming)
+		}
+		added[key] = struct{}{}
+	}
+
+	for _, book := range Data.BookList {
+		key := strings.ToLower(book.Path)
+		if _, ok := added[key]; ok {
+			continue
+		}
+		book.Missing = true
+		merged = append(merged, book)
+	}
+
+	sort.SliceStable(merged, func(i, j int) bool {
+		if merged[i].Missing != merged[j].Missing {
+			return !merged[i].Missing && merged[j].Missing
+		}
+		return strings.ToLower(merged[i].Path) < strings.ToLower(merged[j].Path)
+	})
+
+	Data.BookList = merged
 	SaveDataToStorageFile()
+}
+
+func mergeBookData(existing, incoming types.Book) types.Book {
+	merged := existing
+	merged.Title = incoming.Title
+	merged.Path = incoming.Path
+	merged.Chapters = incoming.Chapters
+	merged.FolderArt = incoming.FolderArt
+	merged.FullLengthSeconds = incoming.FullLengthSeconds
+	merged.Missing = false
+	return merged
 }
 
 // Update the currently playing audio book data in storage file

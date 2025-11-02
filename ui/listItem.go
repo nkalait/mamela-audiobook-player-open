@@ -30,6 +30,9 @@ type MyListItemWidget struct {
 func getBookImage(book types.Book) []byte {
 	var picBytes []byte
 	var pic *tag.Picture = nil
+	if book.Missing {
+		return bundled.ResourceIconPng.StaticContent
+	}
 	if book.Metadata != nil && book.Metadata.Picture() != nil {
 		pic = book.Metadata.Picture()
 		picBytes = pic.Data
@@ -57,6 +60,9 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	item := &MyListItemWidget{}
 
 	title := cases.Title(language.English).String(b.Title)
+	if b.Missing {
+		title += " (missing)"
+	}
 	var button *widget.Button
 	bookImage := getBookImage(b)
 	var img image.Image
@@ -68,14 +74,20 @@ func NewMyListItemWidget(b types.Book) *MyListItemWidget {
 	// 	StaticContent: []byte{},
 	// }
 
-	onTapped := func() {
-		var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
-		audio.LoadAndPlay(playingBook, false, true, funcChanFolderArtUpdaterCallBack)
-		audio.NotifyNewBookLoaded <- audio.GetCurrentBookFullLength()
+	onTapped := func() {}
+	if !b.Missing {
+		onTapped = func() {
+			var playingBook types.PlayingBook = types.PlayingBook{Book: b, CurrentChapter: 0, Finished: false}
+			audio.LoadAndPlay(playingBook, false, true, funcChanFolderArtUpdaterCallBack)
+			audio.NotifyNewBookLoaded <- audio.GetCurrentBookFullLength()
+		}
 	}
 
 	// res.StaticContent = bookImage
 	button = widget.NewButton("", onTapped)
+	if b.Missing {
+		button.Disable()
+	}
 
 	item = &MyListItemWidget{
 		Icon:   canvas.NewImageFromImage(img),

@@ -144,12 +144,16 @@ func updateBookList(readRootFolder bool) {
 			if book.Path == "" {
 				fmt.Println("!!!!!!!!!!!1=================")
 			}
-			// if book.Path != "" {
-			book.Metadata = getFileMetaData(book)
+			if book.Missing {
+				book.Metadata = nil
+			} else {
+				book.Metadata = getFileMetaData(book)
+			}
 			bookTileLayout := NewMyListItemWidget(book)
 			bookListVBox.Add(bookTileLayout)
-			loadPreviousBookOnLoad(book.Path, bookTileLayout.Button)
-			// }
+			if !book.Missing {
+				loadPreviousBookOnLoad(book.Path, bookTileLayout.Button)
+			}
 		}
 		bookListVBox.Refresh()
 	}
@@ -181,17 +185,24 @@ func parseRootFolder() {
 }
 
 func getBookFile(b types.Book) *os.File {
+	if b.Missing || len(b.Chapters) == 0 {
+		return nil
+	}
 	path := storage.Data.Root + buildconstraints.PathSeparator + b.Path + buildconstraints.PathSeparator + b.Chapters[0].FileName
-	f, _ := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil
+	}
 	return f
 }
 
 func getFileMetaData(b types.Book) tag.Metadata {
 	var meta tag.Metadata = nil
 	f := getBookFile(b)
-	defer f.Close()
-	if f != nil {
-		meta, _ = tag.ReadFrom(f)
+	if f == nil {
+		return nil
 	}
+	defer f.Close()
+	meta, _ = tag.ReadFrom(f)
 	return meta
 }
