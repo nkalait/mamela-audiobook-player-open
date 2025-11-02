@@ -13,8 +13,9 @@ import (
 	bass "github.com/pteich/gobass"
 )
 
-var LibDir = "lib" + buildconstraints.PathSeparator + "mac"
-var LibExt = ".dylib" // library file extension, eg .dylib
+
+
+
 
 const (
 	PAUSED = iota
@@ -143,18 +144,7 @@ func initBass() {
 	BassInitiatedChan <- true
 }
 
-// Load plugins needed by Bass
-func loadPlugins() []uint32 {
-	opusPath := LibDir + buildconstraints.PathSeparator + "libbassopus" + LibExt
-	fmt.Println(opusPath)
-	pluginLibbassOpus, err := bass.PluginLoad(opusPath, bass.StreamDecode)
-	merror.PanicError(err)
 
-	plugins := make([]uint32, 1)
-	plugins = append(plugins, pluginLibbassOpus)
-
-	return plugins
-}
 
 // Start listening to audio playing event and exit event
 func StartChannelListener() {
