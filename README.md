@@ -1,4 +1,12 @@
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/nkalait/mamela-audiobook-player-open)](https://goreportcard.com/report/github.com/nkalait/mamela-audiobook-player-open)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/nkalait/mamela-audiobook-player-open.svg?style=social)](https://github.com/nkalait/mamela-audiobook-player-open/stargazers)
+
+
 # Mamela Audiobook Player
+
+A minimalist, **_cross-platform_** audiobook player for humans who enjoy **_audiobooks_**.
 
 ![example image](https://github.com/nkalait/mamela-audiobook-player/blob/main/image.jpg?raw=true)
 
