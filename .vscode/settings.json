@@ -14,6 +14,7 @@
   ],
   "gopls": {
     "build.env": { "GOOS": "darwin", "GOARCH": "arm64" },
+    "env": { "CGO_ENABLED": "1" },
     // "build.buildFlags": ["-tags=prod_mac,prod_linux64,prod_win"],
     "build.buildFlags": ["-tags=prod_mac"],
     "ui.semanticTokens": true,
