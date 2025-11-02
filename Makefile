@@ -36,12 +36,13 @@ build_linux64:
 	cp lib/linux64/libbass_aac.so ${LIB_LINUX64}
 	cp lib/linux64/libbassopus.so ${LIB_LINUX64}
 	
-	GOOS=linux go build -tags working -tags=prod_linux64 -o app/${BINARY_NAME_LINUX64} main.go
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc go build -tags working -tags=prod_linux64 -o app/${BINARY_NAME_LINUX64} main.go
 	cd app && ./${BINARY_NAME_LINUX64}
 
-
-
-
+#########################################################################
+#########################################################################
+#########################################################################
+#########################################################################
 BINARY_NAME_LINUXARM64=mamela_audiobook_player_linuxarm64
 LIB_LINUXARM64=app/lib
 build_linuxarm64:
