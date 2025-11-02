@@ -1,4 +1,16 @@
 {
+  "gopls": {
+    "env": { "CGO_ENABLED": "1" },
+    "build.env": { "GOOS": "darwin", "GOARCH": "arm64" },
+    // "build.buildFlags": ["-tags=prod_mac,prod_linux64,prod_win"],
+    "build.buildFlags": ["-tags=prod_mac"],
+    "ui.semanticTokens": true,
+    // you can optionally turn on these features for more colors
+    // see https://go.dev/issue/45753 and https://go.dev/issue/45792
+    // "ui.noSemanticString": true, // delegates string syntax highlighting to vscode
+    // "ui.noSemanticNumber": true, // delegates number syntax highlighting to vscode
+    "ui.diagnostic.staticcheck": false
+  },
   "cSpell.words": [
     "buildconstraints",
     "customtheme",
@@ -12,16 +24,4 @@
     "pteich",
     "sqweek"
   ],
-  "gopls": {
-    "build.env": { "GOOS": "darwin", "GOARCH": "arm64" },
-    "env": { "CGO_ENABLED": "1" },
-    // "build.buildFlags": ["-tags=prod_mac,prod_linux64,prod_win"],
-    "build.buildFlags": ["-tags=prod_mac"],
-    "ui.semanticTokens": true,
-    // you can optionally turn on these features for more colors
-    // see https://go.dev/issue/45753 and https://go.dev/issue/45792
-    // "ui.noSemanticString": true, // delegates string syntax highlighting to vscode
-    // "ui.noSemanticNumber": true, // delegates number syntax highlighting to vscode
-    "ui.diagnostic.staticcheck": false
-  }
 }
