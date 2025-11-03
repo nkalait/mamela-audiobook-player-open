@@ -85,6 +85,9 @@ pack_mac:
 
 	install_name_tool -add_rpath "@loader_path/../lib/mac" ${APP_DIR_MAC}/mamela
 #	install_name_tool -change @loader_path/libbass.dylib @loader_path/../lib/mac/libbass.dylib ${APP_DIR_MAC}/mamela
+	rm -rf dist
+	mkdir dist
+	mv mamela.app dist/Mamela.app
 
 #########################################################################
 #########################################################################
