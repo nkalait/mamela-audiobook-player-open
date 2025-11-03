@@ -17,6 +17,8 @@ import (
 // The name of the app
 const appLabel = "Mamela"
 
+var Version = "dev"
+
 func main() {
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))

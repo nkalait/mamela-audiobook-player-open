@@ -75,19 +75,41 @@ PACK_APP_NAME_MAC=Mamela.app
 PACK_LIB_MAC=${PACK_APP_NAME_MAC}/Contents/lib/mac
 APP_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/MacOS
 PACK_DB_DIR_MAC=${PACK_APP_NAME_MAC}/Contents/db
+VERSION := v1.0.0
+NUM_VERSION := 1.0.0
+APP_NAME := Mamela
+APP_ID := mamela.co.ls
+ICON := Icon.png
+LIB_DIR := lib/mac
+DIST_DIR := dist
 pack_mac:
-	CGO_LDFLAGS="-L lib/mac" fyne package -os darwin -appID mamela.co.ls --tags prod_mac --release 
-	mv mamela.app ${PACK_APP_NAME_MAC}
-	mkdir -p ${PACK_LIB_MAC}
-	cp lib/mac/libbass.dylib ${PACK_LIB_MAC}
-	cp lib/mac/libbassopus.dylib ${PACK_LIB_MAC}
-	mkdir -p ${PACK_DB_DIR_MAC}
+	@echo "🚀 Building $(APP_NAME) $(VERSION) for macOS..."
+	FYNE_LDFLAGS="-X main.Version=$(VERSION)" \
+	CGO_LDFLAGS="-L $(LIB_DIR)" \
+	fyne package -os darwin \
+		-appID $(APP_ID) \
+		--tags prod_mac \
+		--release \
+		-icon $(ICON) \
+		-name "$(APP_NAME)" \
+		-appVersion "$(NUM_VERSION)"
 
-	install_name_tool -add_rpath "@loader_path/../lib/mac" ${APP_DIR_MAC}/mamela
-#	install_name_tool -change @loader_path/libbass.dylib @loader_path/../lib/mac/libbass.dylib ${APP_DIR_MAC}/mamela
-	rm -rf dist
-	mkdir dist
-	mv mamela.app dist/Mamela.app
+	@echo "🧱 Preparing bundle..."
+	mv mamela.app $(APP_NAME).app
+	mkdir -p $(APP_NAME).app/Contents/lib/mac
+	cp $(LIB_DIR)/libbass.dylib $(APP_NAME).app/Contents/lib/mac/
+	cp $(LIB_DIR)/libbassopus.dylib $(APP_NAME).app/Contents/lib/mac/
+	mkdir -p $(APP_NAME).app/Contents/db
+	install_name_tool -add_rpath "@loader_path/../lib/mac" $(APP_NAME).app/Contents/MacOS/mamela
+
+	@echo "📦 Packaging..."
+	rm -rf $(DIST_DIR)
+	mkdir -p $(DIST_DIR)
+	mv $(APP_NAME).app $(DIST_DIR)/$(APP_NAME).app
+	cd $(DIST_DIR) && zip -r9 $(APP_NAME)_$(VERSION)_macos_intel.zip $(APP_NAME).app && rm -rf $(APP_NAME).app
+	
+
+	@echo "✅ Done → $(DIST_DIR)/$(APP_NAME)_$(VERSION)_macos_intel.zip"
 
 #########################################################################
 #########################################################################
