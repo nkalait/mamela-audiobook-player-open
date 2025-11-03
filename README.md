@@ -92,6 +92,12 @@ lib/             Native BASS libraries for each supported platform.
 
 ---
 
+## Pre-packaged App
+
+A pre-packaged version for macOS is available under downloads.
+
+---
+
 ## Packaging Builds
 
 | Platform | Command | Notes |
@@ -117,9 +123,10 @@ lib/             Native BASS libraries for each supported platform.
 
 - macOS Sonoma (Intel)
 - macOS “Tahoe” (Apple silicon)
-- Lubuntu
-- Linux Mint
-- elementary OS
+- Ubuntu (AMD & ARM)
+- Lubuntu (AMD)
+- Linux Mint (AMD)
+- elementary OS (AMD)
 
 If you try Mamela on another distribution or Windows variant, please report back so we can add it here.
 
